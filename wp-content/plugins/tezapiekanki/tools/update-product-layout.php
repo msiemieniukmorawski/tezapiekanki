@@ -11,7 +11,8 @@
  *    i tabela) dostaje zamiast nich jeden widget Shortcode [tzp_nutrition]. Ustawienia kontenera (odstępy) zostają.
  * 2. Ten kontener przechodzi wyżej: zaraz pod blok "Info praktyczne" (shortcode [html_block …]), a gdy go nie ma,
  *    pod kontener z przyciskiem "Dodaj do koszyka". Logotypy płatności i licznik odwiedzin są pod nim.
- * 3. Pod tytułem produktu widget Shortcode [tzp_flavor_pins].
+ * 3. Pod formularzem zakupu (kontener z ceną i "Dodaj do koszyka") nowy kontener z widgetem Shortcode
+ *    [tzp_flavor_pins]. Gdy piny są w innym miejscu (do 20.10 były pod tytułem), przenosi je.
  * Kroki, które już są w layoucie, pomija. Widgety mają wyłączony cache elementu (treść zależy od produktu).
  * Przed zapisem kopia _elementor_data trafia do wp-content/uploads/tzp-backup/.
  *
@@ -141,19 +142,88 @@ if ( $tzp_has( $elements, $tzp_is_shortcode( '/\[tzp_nutrition\b/' ) ) ) {
 }
 
 /*
- * 3. Piny smaków pod tytułem.
+ * 3. Piny smaków pod formularzem zakupu: osobny kontener zaraz pod kontenerem z ceną i "Dodaj do koszyka", z jego
+ *    odstępami (decyzja Marcina z 20.10; wcześniej piny były pod tytułem). Piny z innego miejsca są przenoszone.
  */
-if ( $tzp_has( $elements, $tzp_is_shortcode( '/\[tzp_flavor_pins\b/' ) ) ) {
-	WP_CLI::log( '[tzp_flavor_pins] już jest, pomijam.' );
-} else {
-	$pins = static function ( array &$els ) use ( &$pins, $tzp_shortcode_widget ) {
-		foreach ( $els as $i => &$el ) {
-			if ( 'wd_single_product_title' === ( $el['widgetType'] ?? '' ) ) {
-				array_splice( $els, $i + 1, 0, array( $tzp_shortcode_widget( '[tzp_flavor_pins]', 'tzp-flavor-pins-widget' ) ) );
-				return 'piny pod tytułem ' . $el['id'];
+$tzp_is_pins = $tzp_is_shortcode( '/\[tzp_flavor_pins\b/' );
+$tzp_is_atc  = $tzp_is_widget( 'wd_single_product_add_to_cart' );
+
+// 'yes' = piny są już w kontenerze tuż pod kontenerem z przyciskiem, 'no' = nie, false = brak przycisku.
+$pins_placed = static function ( $els ) use ( &$pins_placed, $tzp_has, $tzp_is_pins, $tzp_is_atc ) {
+	foreach ( array_values( $els ) as $i => $el ) {
+		$kids = $el['elements'] ?? array();
+		foreach ( $kids as $kid ) {
+			if ( $tzp_is_atc( $kid ) ) {
+				$next = array_values( $els )[ $i + 1 ] ?? null;
+				return $next && $tzp_has( array( $next ), $tzp_is_pins ) ? 'yes' : 'no';
 			}
-			if ( ! empty( $el['elements'] ) ) {
-				$done = $pins( $el['elements'] );
+		}
+		if ( $kids ) {
+			$found = $pins_placed( $kids );
+			if ( $found ) {
+				return $found;
+			}
+		}
+	}
+	return false;
+};
+
+$placed = $pins_placed( $elements );
+
+if ( 'yes' === $placed ) {
+	WP_CLI::log( '[tzp_flavor_pins] już jest pod formularzem zakupu, pomijam.' );
+} elseif ( false === $placed ) {
+	WP_CLI::warning( 'Brak widgetu "Dodaj do koszyka", piny nie wstawione.' );
+} else {
+	// Usunięcie pinów z dotychczasowego miejsca (widget zostaje ten sam) i pustych kontenerów po nich.
+	$pins_widget = null;
+	$pins_remove = static function ( array &$els ) use ( &$pins_remove, &$pins_widget, $tzp_is_pins ) {
+		foreach ( array_keys( $els ) as $i ) {
+			if ( $tzp_is_pins( $els[ $i ] ) ) {
+				$pins_widget = $els[ $i ];
+				unset( $els[ $i ] );
+				continue;
+			}
+			if ( ! empty( $els[ $i ]['elements'] ) ) {
+				$pins_remove( $els[ $i ]['elements'] );
+				$classes = (string) ( $els[ $i ]['settings']['css_classes'] ?? '' );
+				if ( ! $els[ $i ]['elements'] && false !== strpos( $classes, 'tzp-flavor-pins-box' ) ) {
+					unset( $els[ $i ] );
+				}
+			}
+		}
+		$els = array_values( $els );
+	};
+	$pins_remove( $elements );
+
+	$box = array(
+		'id'       => $tzp_id(),
+		'elType'   => 'container',
+		'settings' => array(
+			'content_width' => 'full',
+			'css_classes'   => 'tzp-flavor-pins-box',
+		),
+		'elements' => array( $pins_widget ?: $tzp_shortcode_widget( '[tzp_flavor_pins]', 'tzp-flavor-pins-widget' ) ),
+		'isInner'  => true,
+	);
+
+	$pins_insert = static function ( array &$els ) use ( &$pins_insert, $box, $tzp_is_atc ) {
+		foreach ( array_keys( $els ) as $i ) {
+			$kids = $els[ $i ]['elements'] ?? array();
+			foreach ( $kids as $kid ) {
+				if ( ! $tzp_is_atc( $kid ) ) {
+					continue;
+				}
+				foreach ( $els[ $i ]['settings'] ?? array() as $key => $value ) {
+					if ( preg_match( '/^(padding|margin)(_tablet|_mobile)?$/', $key ) ) {
+						$box['settings'][ $key ] = $value;
+					}
+				}
+				array_splice( $els, $i + 1, 0, array( $box ) );
+				return $els[ $i ]['id'];
+			}
+			if ( $kids ) {
+				$done = $pins_insert( $els[ $i ]['elements'] );
 				if ( $done ) {
 					return $done;
 				}
@@ -162,13 +232,8 @@ if ( $tzp_has( $elements, $tzp_is_shortcode( '/\[tzp_flavor_pins\b/' ) ) ) {
 		return false;
 	};
 
-	$done = $pins( $elements );
-
-	if ( ! $done ) {
-		WP_CLI::warning( 'Brak widgetu tytułu produktu, piny nie wstawione.' );
-	} else {
-		$changes[] = $done;
-	}
+	$after      = $pins_insert( $elements );
+	$changes[] = 'piny ' . ( $pins_widget ? 'przeniesione' : 'wstawione' ) . ' pod kontener z ceną i "Dodaj do koszyka" ' . $after;
 }
 
 if ( ! $changes ) {

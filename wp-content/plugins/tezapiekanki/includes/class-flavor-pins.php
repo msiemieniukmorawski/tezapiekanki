@@ -1,6 +1,6 @@
 <?php
 /**
- * Piny smaków na karcie produktu: klikalne nazwy pozostałych zapiekanek pod tytułem (layout 6480).
+ * Piny smaków na karcie produktu: klikalne nazwy pozostałych zapiekanek pod ceną i "Dodaj do koszyka" (layout 6480).
  *
  * Shortcode [tzp_flavor_pins]. Lista to widoczne produkty z kategorii Zapiekanki (bez ukrytych kopii do zestawów)
  * w kolejności ze sklepu (Rearrange Products, meta rwpp_sortorder_{ID kategorii}), więc nowy smak pojawia się sam.
