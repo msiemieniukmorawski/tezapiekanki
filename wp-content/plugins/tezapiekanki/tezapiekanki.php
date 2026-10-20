@@ -26,6 +26,7 @@ require_once TZP_DIR . 'includes/class-product-card.php';
 require_once TZP_DIR . 'includes/class-flavor-pins.php';
 require_once TZP_DIR . 'includes/class-product-schema.php';
 require_once TZP_DIR . 'includes/class-bundles.php';
+require_once TZP_DIR . 'includes/class-emails.php';
 
 add_action( 'plugins_loaded', array( 'TZP\Shipping_Bar', 'init' ) );
 add_action( 'plugins_loaded', array( 'TZP\Shipping_Bar_Customizer', 'init' ) );
@@ -35,3 +36,4 @@ add_action( 'plugins_loaded', array( 'TZP\Product_Card', 'init' ) );
 add_action( 'plugins_loaded', array( 'TZP\Flavor_Pins', 'init' ) );
 add_action( 'plugins_loaded', array( 'TZP\Product_Schema', 'init' ) );
 add_action( 'plugins_loaded', array( 'TZP\Bundles', 'init' ) );
+add_action( 'plugins_loaded', array( 'TZP\Emails', 'init' ) );
