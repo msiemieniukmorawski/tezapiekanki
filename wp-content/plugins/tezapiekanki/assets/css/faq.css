@@ -1,0 +1,188 @@
+/* =========================================================
+   FAQ: pytania rozwijane (includes/class-faq.php, widget "FAQ (zwiń / rozwiń)")
+   Domyślnie wygląd FAQ ze strony głównej: białe karty, otwarte pytanie w kolorze marki, strzałka po prawej.
+   Zmienne ustawia widget w Elementorze (zakładka Styl).
+   ========================================================= */
+
+.tzp-faq {
+	--tzp-faq-gap: 12px;
+	--tzp-faq-bg: #fff;
+	--tzp-faq-border: transparent;
+	--tzp-faq-radius: 8px;
+	--tzp-faq-pt: 20px;
+	--tzp-faq-pr: 24px;
+	--tzp-faq-pb: 20px;
+	--tzp-faq-pl: 24px;
+	--tzp-faq-q-color: #111;
+	--tzp-faq-q-open: #8c3215;
+	--tzp-faq-icon: #9a9a9a;
+	--tzp-faq-a-color: #333;
+
+	display: grid;
+	gap: var(--tzp-faq-gap);
+	/* Płynne rozwijanie do wysokości "auto" (Chrome 129+; inne przeglądarki otwierają bez animacji). */
+	interpolate-size: allow-keywords;
+}
+
+.tzp-faq .tzp-faq__item {
+	margin: 0;
+	border: 1px solid var(--tzp-faq-border);
+	border-radius: var(--tzp-faq-radius);
+	background: var(--tzp-faq-bg);
+}
+
+.tzp-faq .tzp-faq__question {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	margin: 0;
+	padding: var(--tzp-faq-pt) var(--tzp-faq-pr) var(--tzp-faq-pb) var(--tzp-faq-pl);
+	color: var(--tzp-faq-q-color);
+	list-style: none;
+	cursor: pointer;
+	transition: color 0.2s ease;
+}
+
+.tzp-faq .tzp-faq__question::-webkit-details-marker {
+	display: none;
+}
+
+.tzp-faq .tzp-faq__question::marker {
+	content: "";
+}
+
+.tzp-faq .tzp-faq__question:hover,
+.tzp-faq .tzp-faq__item[open] > .tzp-faq__question {
+	color: var(--tzp-faq-q-open);
+}
+
+.tzp-faq .tzp-faq__question:focus-visible {
+	outline: 2px solid var(--tzp-faq-q-open);
+	outline-offset: -2px;
+	border-radius: var(--tzp-faq-radius);
+}
+
+/* Pytanie bywa nagłówkiem (H2-H4), więc zerujemy style nagłówków motywu. */
+.tzp-faq .tzp-faq__title {
+	flex: 1 1 auto;
+	margin: 0;
+	padding: 0;
+	color: inherit;
+	font-family: inherit;
+	font-size: 20px;
+	font-weight: 500;
+	line-height: 1.35;
+	letter-spacing: normal;
+	text-transform: none;
+}
+
+.tzp-faq .tzp-faq__icon {
+	flex: 0 0 auto;
+	width: 9px;
+	height: 9px;
+	margin: 0 4px 4px 0;
+	border-right: 1.5px solid var(--tzp-faq-icon);
+	border-bottom: 1.5px solid var(--tzp-faq-icon);
+	transform: rotate(45deg);
+	transition: transform 0.25s ease, margin 0.25s ease;
+}
+
+.tzp-faq .tzp-faq__item[open] .tzp-faq__icon {
+	margin: 4px 4px 0 0;
+	transform: rotate(-135deg);
+}
+
+.tzp-faq .tzp-faq__answer {
+	padding: 0 var(--tzp-faq-pr) var(--tzp-faq-pb) var(--tzp-faq-pl);
+	color: var(--tzp-faq-a-color);
+	font-size: 16px;
+	font-weight: 300;
+	line-height: 1.7;
+}
+
+.tzp-faq .tzp-faq__answer > :last-child {
+	margin-bottom: 0;
+}
+
+.tzp-faq .tzp-faq__item::details-content {
+	block-size: 0;
+	overflow: clip;
+	transition: block-size 0.3s ease, content-visibility 0.3s allow-discrete;
+}
+
+.tzp-faq .tzp-faq__item[open]::details-content {
+	block-size: auto;
+}
+
+/* Karta produktu: opis ma białe tło, więc białe karty pytań dostają obramowanie (jak na stronie FAQ). */
+.single-product .tzp-faq {
+	--tzp-faq-border: #e8e8e8;
+}
+
+/* Link pod pytaniami ("Zobacz wszystkie pytania"): obramowany przycisk jak "Napisz do nas" na stronie głównej. */
+.tzp-faq-more {
+	margin: 20px 0 0;
+}
+
+.tzp-faq-more--center {
+	text-align: center;
+}
+
+.tzp-faq-more--right {
+	text-align: right;
+}
+
+.tzp-faq-more .tzp-faq-more__link {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 42px;
+	padding: 8px 20px;
+	border: 2px solid #8c3215;
+	border-radius: 5px;
+	color: #8c3215;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.2;
+	text-decoration: none;
+	text-transform: uppercase;
+	transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.tzp-faq-more .tzp-faq-more__link:hover,
+.tzp-faq-more .tzp-faq-more__link:focus-visible {
+	background: #8c3215;
+	color: #fff;
+}
+
+.tzp-faq-more__arrow {
+	transition: transform 0.2s ease;
+}
+
+.tzp-faq-more__link:hover .tzp-faq-more__arrow {
+	transform: translateX(3px);
+}
+
+@media (max-width: 767.98px) {
+	.tzp-faq {
+		--tzp-faq-pt: 16px;
+		--tzp-faq-pr: 18px;
+		--tzp-faq-pb: 16px;
+		--tzp-faq-pl: 18px;
+	}
+
+	.tzp-faq .tzp-faq__title {
+		font-size: 16px;
+	}
+
+	.tzp-faq .tzp-faq__answer {
+		font-size: 14px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tzp-faq .tzp-faq__item::details-content,
+	.tzp-faq .tzp-faq__icon {
+		transition: none;
+	}
+}
