@@ -4,9 +4,9 @@
 # uploads, cache, backupy, wp-config.php z hasłami), a dopuszczamy tylko
 # kod i dokumentację, które sami zmieniamy.
 #
-# Wtyczki `tezapiekanki` i `wc-ship-today-notice` mają własne repozytoria
-# (wp-content/plugins/*/.git), więc tu ich nie śledzimy. Gdyby dodać je
-# tutaj, git zapisałby je jako puste "embedded repository" bez plików.
+# Wtyczka `tezapiekanki` ma własne repozytorium (wp-content/plugins/tezapiekanki/.git),
+# więc tu jej nie śledzimy. Gdyby dodać ją tutaj, git zapisałby ją jako puste
+# "embedded repository" bez plików.
 
 /*
 
@@ -29,6 +29,11 @@
 !/wp-content/themes/
 /wp-content/themes/*
 !/wp-content/themes/woodmart-child/
+
+# Wtyczka z silnikiem terminów (wcześniej osobne repo, historia w backups/2026-10-28-wc-ship-today-notice-git)
+!/wp-content/plugins/
+/wp-content/plugins/*
+!/wp-content/plugins/wc-ship-today-notice/
 
 # Śmieci systemowe i edytora
 .DS_Store
