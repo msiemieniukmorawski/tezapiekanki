@@ -122,7 +122,7 @@ $elements = array(
 				),
 				'elements'   => array(),
 			),
-			$tzp_text( '<p>Przyjeżdża w termoboxie z wkładami chłodzącymi. W lodówce wytrzyma 6 dni, możesz ją też zamrozić.</p>' ),
+			$tzp_text( '<p>Przyjeżdża w termoboxie z wkładami chłodzącymi. W lodówce wytrzyma 7 dni, możesz ją też zamrozić.</p>' ),
 			array(
 				'id'         => $tzp_id(),
 				'elType'     => 'widget',

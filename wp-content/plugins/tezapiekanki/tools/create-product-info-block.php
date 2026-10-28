@@ -40,9 +40,9 @@ $tzp_layouts = array(
 	6533 => 'zestawy-zapiekanek',
 );
 
-// Pogrubiony tytuł i krótki opis pod nim (decyzja Marcina z 19.10: samo "6 dni od dostawy" było niejasne).
+// Pogrubiony tytuł i krótki opis pod nim (decyzja Marcina z 19.10: samo "6 dni od dostawy" było niejasne; od 26.10 7 dni w lodówce).
 $tzp_items = array(
-	array( 'icon' => 'info-6-dni.png', 'title' => '6 dni świeżości', 'text' => 'liczone od dostawy' ),
+	array( 'icon' => 'info-6-dni.png', 'title' => '7 dni świeżości', 'text' => 'w lodówce, liczone od dostawy' ),
 	array( 'icon' => 'info-lodowka.png', 'title' => 'Trzymaj w lodówce', 'text' => 'zaraz po odbiorze paczki' ),
 	array( 'icon' => 'info-zamrazanie.png', 'title' => 'Możesz zamrozić', 'text' => 'najlepiej od razu po odbiorze' ),
 	array( 'icon' => 'info-termobox.png', 'title' => 'Termobox', 'text' => 'z wkładami chłodzącymi' ),

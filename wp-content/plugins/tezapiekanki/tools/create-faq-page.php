@@ -35,7 +35,7 @@ $tzp_url = static function ( $path ) {
 $tzp_q = array(
 	'wysylka'     => array(
 		'question' => 'Kiedy wysyłacie zamówienia i kiedy dotrze moja paczka?',
-		'answer'   => '<p>Wysyłamy dwa razy w tygodniu: w poniedziałki i środy. Zamówienia złożone do niedzieli do 20:00 wysyłamy w poniedziałek, a dostarczamy we wtorek. Zamówienia złożone do wtorku do 20:00 wysyłamy w środę, a dostarczamy w czwartek. Termin dostawy wybierasz przy składaniu zamówienia, a najbliższy wolny termin widzisz też na stronie każdej zapiekanki.</p>',
+		'answer'   => '<p>Wysyłamy dwa razy w tygodniu: w poniedziałki i środy. Zamówienia złożone do niedzieli do 23:59 wysyłamy w poniedziałek, a dostarczamy we wtorek. Zamówienia złożone do wtorku do 23:59 wysyłamy w środę, a dostarczamy w czwartek. Termin dostawy wybierasz przy składaniu zamówienia, a najbliższy wolny termin widzisz też na stronie każdej zapiekanki.</p>',
 	),
 	'dlaczego'    => array(
 		'question' => 'Dlaczego wysyłacie tylko dwa razy w tygodniu?',
@@ -59,7 +59,7 @@ $tzp_q = array(
 	),
 	'swiezosc'    => array(
 		'question' => 'Jak długo zapiekanki zachowują świeżość?',
-		'answer'   => '<p>Zapiekanki są zdatne do spożycia przez 6 dni od dostawy, jeśli przechowujesz je w lodówce. Włóż je do lodówki zaraz po odbiorze paczki.</p>',
+		'answer'   => '<p>Zapiekanki są zdatne do spożycia przez 7 dni od dostawy, jeśli przechowujesz je w lodówce. Włóż je do lodówki zaraz po odbiorze paczki.</p>',
 	),
 	'mrozenie'    => array(
 		'question' => 'Czy zapiekanki można zamrozić?',
@@ -67,7 +67,7 @@ $tzp_q = array(
 	),
 	'pieczenie'   => array(
 		'question' => 'Jak długo piec zapiekanki i w jakiej temperaturze?',
-		'answer'   => '<p>Zapiekanki są przygotowane tak, aby każdy mógł je łatwo upiec w domowym piekarniku. Standardowo wystarczy <strong>kilka minut pieczenia</strong>, aby uzyskać chrupiące pieczywo i gorący, soczysty farsz. Szczegółowe instrukcje otrzymasz od nas w wiadomości mailowej. Do każdej z naszych zapiekanek przygotowaliśmy osobną instrukcję, która pomoże Ci uzyskać jej najlepsze walory smakowe.</p>',
+		'answer'   => '<p>Zapiekanki są przygotowane tak, aby każdy mógł je łatwo upiec w domowym piekarniku. Wystarczy nagrzać piekarnik do 220-250°C (bez termoobiegu) i piec zapiekankę <strong>około 8 minut</strong>, aby uzyskać chrupiące pieczywo i gorący, soczysty farsz. Szczegółowe instrukcje otrzymasz od nas w wiadomości mailowej. Do każdej z naszych zapiekanek przygotowaliśmy osobną instrukcję, która pomoże Ci uzyskać jej najlepsze walory smakowe.</p>',
 	),
 	'farsz'       => array(
 		'question' => 'Na czym polega wyjątkowość waszego farszu?',

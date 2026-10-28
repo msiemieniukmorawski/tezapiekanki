@@ -68,7 +68,7 @@ $tzp_extra_terms = array(
 	'Zapiekanka na ostro' => array(
 		'pa_mieso'               => array( 'Chorizo' ),
 		'pa_skladnik-dodatkowy'  => array( 'Jalapeño' ),
-		'pa_termin-przydatnosci' => array( '6 dni' ),
+		'pa_termin-przydatnosci' => array( '7 dni' ),
 	),
 );
 
