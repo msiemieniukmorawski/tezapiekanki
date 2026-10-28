@@ -6,7 +6,10 @@
 	position: relative;
 	z-index: 400;
 	overflow: hidden;
-	background: #8c3215;
+	/* Czarna (decyzja z 26.10): ceglana zlewała się ze zdjęciem pod przezroczystym nagłówkiem strony głównej.
+	   Linia na dole oddziela ją od czarnego paska pod nagłówkiem na podstronach. */
+	background: #000;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.14);
 	color: #fff;
 	transition: height 0.25s ease;
 }
