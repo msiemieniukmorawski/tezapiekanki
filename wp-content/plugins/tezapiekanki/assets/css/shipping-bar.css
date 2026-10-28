@@ -1,13 +1,13 @@
 /* =========================================================
-   Belka o wysyłce nad nagłówkiem (includes/class-shipping-bar.php)
+   Shipping bar above the header (includes/class-shipping-bar.php)
    ========================================================= */
 
 .tzp-bar {
 	position: relative;
 	z-index: 400;
 	overflow: hidden;
-	/* Czarna (decyzja z 26.10): ceglana zlewała się ze zdjęciem pod przezroczystym nagłówkiem strony głównej.
-	   Linia na dole oddziela ją od czarnego paska pod nagłówkiem na podstronach. */
+	/* Black (decided 2026-10-26): the brick color blended with the photo under the transparent home page header.
+	   The bottom line separates it from the black strip under the header on subpages. */
 	background: #000;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.14);
 	color: #fff;
@@ -73,7 +73,7 @@
 	border-radius: 4px;
 }
 
-/* Woodmart stylizuje button (tło, padding, min-height), więc zerujemy to jawnie. */
+/* Woodmart styles button (background, padding, min-height), so reset it explicitly. */
 .tzp-bar .tzp-bar__close {
 	position: absolute;
 	top: 50%;
@@ -134,7 +134,7 @@
 
 /* =========================================================
    Popup "Dlaczego wysyłamy tylko 2 razy w tygodniu?"
-   Najbliższy termin: [ship_today_notice class="tzp-why-dates" text="…"] w popupie Woodmarta.
+   Nearest date: [ship_today_notice class="tzp-why-dates" text="…"] in the Woodmart popup.
    ========================================================= */
 
 .wc-ship-today-notice.tzp-why-dates {

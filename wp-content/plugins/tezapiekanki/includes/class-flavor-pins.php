@@ -1,13 +1,13 @@
 <?php
 /**
- * Piny smaków na karcie produktu: klikalne nazwy pozostałych zapiekanek pod ceną i "Dodaj do koszyka" (layout 6480).
+ * Flavor pins on the product page: clickable names of the other zapiekanki below the price and "Dodaj do koszyka" (layout 6480).
  *
- * Shortcode [tzp_flavor_pins]. Lista to widoczne produkty z kategorii Zapiekanki (bez ukrytych kopii do zestawów)
- * w kolejności ze sklepu (Rearrange Products, meta rwpp_sortorder_{ID kategorii}), więc nowy smak pojawia się sam.
- * Bieżący smak wyróżniony, niedostępne wyszarzone, ale klikalne (można sprawdzić opis i wrócić później).
- * Na telefonie jeden przewijany wiersz, skrypt przewija go do bieżącego smaku.
+ * Shortcode [tzp_flavor_pins]. The list is the visible products from the Zapiekanki category (without hidden bundle copies)
+ * in shop order (Rearrange Products, meta rwpp_sortorder_{category ID}), so a new flavor appears automatically.
+ * Current flavor highlighted, unavailable ones greyed out but clickable (you can read the description and come back later).
+ * On phones a single scrollable row; the script scrolls it to the current flavor.
  *
- * Atrybuty: category (slug kategorii, domyślnie "zapiekanki"), label (tekst przed pinami).
+ * Attributes: category (category slug, default "zapiekanki"), label (text before the pins).
  *
  * @package tezapiekanki
  */
@@ -88,7 +88,7 @@ class Flavor_Pins {
 	/**
 	 * "Zapiekanka z boczkiem" → "Z boczkiem".
 	 *
-	 * @param string $name Nazwa produktu.
+	 * @param string $name Product name.
 	 * @return string
 	 */
 	public static function short_name( $name ) {
@@ -102,9 +102,9 @@ class Flavor_Pins {
 	}
 
 	/**
-	 * Widoczne produkty kategorii w kolejności ze sklepu.
+	 * Visible products of the category in shop order.
 	 *
-	 * @param \WP_Term $term Kategoria.
+	 * @param \WP_Term $term Category.
 	 * @return \WC_Product[]
 	 */
 	private static function products( $term ) {

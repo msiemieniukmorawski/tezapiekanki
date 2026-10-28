@@ -1,19 +1,19 @@
 <?php
 /**
- * Bez licznika "X osób ogląda ten produkt" na kartach produktu (decyzja klientki z 26.10). Woodmart losował tę liczbę
- * (opcja "fake data", 1-27).
+ * Removes the "X osób ogląda ten produkt" counter from product pages (client's decision, 2026-10-26). Woodmart
+ * generated the number at random ("fake data" option, 1-27).
  *
- * Uruchomienie (WP-CLI, jako administrator):
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/remove-visitor-counter.php --user=<login>          (podgląd)
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/remove-visitor-counter.php apply --user=<login>    (zapis)
+ * Usage (WP-CLI, as administrator):
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/remove-visitor-counter.php --user=<login>          (preview)
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/remove-visitor-counter.php apply --user=<login>    (save)
  *
- * Co robi (przez API Elementora i WordPressa, nie SQL-em):
- * 1. Usuwa widget "Visitor counter" (wd_single_product_visitor_counter) ze wszystkich layoutów karty produktu.
- *    Widget wyświetla licznik także przy wyłączonej opcji, więc samo wyłączenie opcji nie wystarcza.
- *    Kontener, w którym po usunięciu nic nie zostało, też jest usuwany. Kopia _elementor_data przed zapisem trafia
- *    do wp-content/uploads/tzp-backup/.
- * 2. Wyłącza opcję Woodmarta counter_visitor_enabled (licznik pod formularzem w szablonach bez Elementora i zapytania
- *    AJAX zliczające wizyty).
+ * What it does (via Elementor and WordPress APIs, no SQL):
+ * 1. Removes the "Visitor counter" widget (wd_single_product_visitor_counter) from all product page layouts.
+ *    The widget shows the counter even with the option disabled, so disabling the option alone is not enough.
+ *    A container left empty after the removal is removed too. A copy of _elementor_data is saved before writing
+ *    to wp-content/uploads/tzp-backup/.
+ * 2. Disables the Woodmart option counter_visitor_enabled (counter below the form in non-Elementor templates and the
+ *    AJAX requests counting visits).
  *
  * @package tezapiekanki
  */
@@ -50,8 +50,8 @@ $tzp_remove = static function ( array &$els ) use ( &$tzp_remove ) {
 	return $count;
 };
 
-// Elementor przy zapisie renderuje widgety do tekstu, a widgety karty produktu wymagają globalnego $product.
-// Kontekst: produkt z kategorii z warunków layoutu, a bez takiego warunku dowolny produkt.
+// On save Elementor renders widgets to plain text, and product page widgets require the global $product.
+// Context: a product from the category in the layout conditions, or any product when there is no such condition.
 $tzp_product_context = static function ( $layout_id ) {
 	$cats = array();
 	foreach ( (array) get_post_meta( $layout_id, 'wd_layout_conditions', true ) as $condition ) {

@@ -1,22 +1,22 @@
 <?php
 /**
- * Teksty po uwagach klientki z 26.10: termin przydatności 7 dni w lodówce, pieczenie 220-250°C około 8 minut,
- * godzina graniczna 23:59, bez napisu "Zamów teraz, a my dostarczymy je jutro…" na stronie głównej.
+ * Texts after the client's feedback of 2026-10-26: shelf life 7 days in the fridge, baking at 220-250°C for about 8 minutes,
+ * cutoff 23:59, no "Zamów teraz, a my dostarczymy je jutro…" line on the front page.
  *
- * Uruchomienie (WP-CLI, jako administrator):
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/update-shop-texts.php --user=<login>          (podgląd)
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/update-shop-texts.php apply --user=<login>    (zapis)
+ * Usage (WP-CLI, as administrator):
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/update-shop-texts.php --user=<login>          (preview)
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/update-shop-texts.php apply --user=<login>    (save)
  *
- * Co zmienia (przez API Elementora, WooCommerce i WordPressa, nie SQL-em):
- * 1. Dokumenty Elementora, wyszukane po roli, nie po ID: strona główna, strona FAQ (opcja tzp_faq_page_id), popup
- *    belki (meta _tzp_popup = shipping-why), blok "Info praktyczne" (meta _tzp_block = product-info), HTML Block
- *    zakładki "Sposób przygotowania" (opcja Woodmarta additional_tab_html_block) i strona "Sposoby dostawy".
- *    Zamienia tylko teksty z tablicy $tzp_texts, reszta dokumentu zostaje. Kopia _elementor_data przed zapisem trafia
- *    do wp-content/uploads/tzp-backup/.
- * 2. Tekst zakładki "Sposób przygotowania" w opcjach Woodmarta (additional_tab_text, zapas, gdy zakładka nie ma bloku).
- * 3. Opisy wszystkich produktów (także ukrytych kopii do zestawów): 6 dni → 7 dni, "kilka minut" → "około 8 minut".
- * 4. Atrybut "Termin przydatności" (pa_termin-przydatnosci): "6 dni" → "7 dni", pusty term "6 dni" jest usuwany.
- * Tekst, którego już nie ma (np. po drugim uruchomieniu), jest pomijany.
+ * What it changes (via Elementor, WooCommerce and WordPress APIs, no SQL):
+ * 1. Elementor documents, looked up by role, not by ID: front page, FAQ page (option tzp_faq_page_id), bar popup
+ *    (meta _tzp_popup = shipping-why), "Info praktyczne" block (meta _tzp_block = product-info), the HTML Block of the
+ *    "Sposób przygotowania" tab (Woodmart option additional_tab_html_block) and the "Sposoby dostawy" page.
+ *    Replaces only the texts from the $tzp_texts array, the rest of the document is kept. A copy of _elementor_data is
+ *    saved before writing to wp-content/uploads/tzp-backup/.
+ * 2. Text of the "Sposób przygotowania" tab in Woodmart options (additional_tab_text, fallback when the tab has no block).
+ * 3. Descriptions of all products (including hidden bundle copies): 6 days → 7 days, "kilka minut" → "około 8 minut".
+ * 4. Attribute "Termin przydatności" (pa_termin-przydatnosci): "6 dni" → "7 dni", the empty "6 dni" term is deleted.
+ * Text that is no longer present (e.g. on a second run) is skipped.
  *
  * @package tezapiekanki
  */
@@ -33,33 +33,33 @@ if ( ! current_user_can( 'edit_posts' ) ) {
 
 $tzp_apply = in_array( 'apply', (array) ( $args ?? array() ), true );
 
-// Stary fragment => nowy. Zamiana fragmentów, nie całych pól, więc reszta tekstu (np. pogrubienia) zostaje.
+// Old fragment => new. Fragments are replaced, not whole fields, so the rest of the text (e.g. bold) is kept.
 $tzp_texts = array(
-	// Strona główna, hero: napis usunięty (decyzja klientki z 26.10, obietnica "jutro" nie pasuje do 2 wysyłek w tygodniu).
+	// Front page, hero: line removed (client's decision, 2026-10-26; the "tomorrow" promise does not fit 2 shipments a week).
 	'<p>Zamów teraz, a my dostarczymy je jutro do Paczkomatu lub Twojego domu.</p>' => '',
-	// Strona główna, kafelek "Świeże i gotowe do upieczenia w domu".
+	// Front page, "Świeże i gotowe do upieczenia w domu" tile.
 	'w domowym piekarniku, w ciągu kilku minut!'                                    => 'w domowym piekarniku, w około 8 minut!',
-	// Strona główna, kroki pieczenia.
+	// Front page, baking steps.
 	'Nastaw piekarnik na 180-220 stopni.'                                           => 'Nastaw piekarnik na 220-250 stopni.',
 	'Piecz przez kilka minut.'                                                      => 'Piecz około 8 minut.',
-	// FAQ (strona główna i /faq/).
+	// FAQ (front page and /faq/).
 	'do niedzieli do 20:00'                                                         => 'do niedzieli do 23:59',
 	'do wtorku do 20:00'                                                            => 'do wtorku do 23:59',
 	'zdatne do spożycia przez 6 dni od dostawy'                                     => 'zdatne do spożycia przez 7 dni od dostawy',
 	'Standardowo wystarczy <strong>kilka minut pieczenia</strong>, aby uzyskać'     => 'Wystarczy nagrzać piekarnik do 220-250°C (bez termoobiegu) i piec zapiekankę <strong>około 8 minut</strong>, aby uzyskać',
-	// Zakładka "Sposób przygotowania" na karcie produktu.
+	// "Sposób przygotowania" tab on the product page.
 	'Temperatura 180 - 220 °C'                                                      => 'Temperatura 220-250°C',
 	'Czas: ~5 - 8 minut'                                                            => 'Czas: około 8 minut',
-	// Popup belki.
+	// Bar popup.
 	'W lodówce wytrzyma 6 dni'                                                      => 'W lodówce wytrzyma 7 dni',
-	// Blok "Info praktyczne".
+	// "Info praktyczne" block.
 	'6 dni świeżości'                                                               => '7 dni świeżości',
 	'<p>liczone od dostawy</p>'                                                     => '<p>w lodówce, liczone od dostawy</p>',
-	// "Sposoby dostawy", sekcja "Kiedy wysyłamy" (wcześniej "w dni robocze do 10:00 tego samego dnia").
+	// "Sposoby dostawy", "Kiedy wysyłamy" section (previously "w dni robocze do 10:00 tego samego dnia").
 	'<ul><li><strong>Zamówienia złożone w dni robocze do godziny 10:00</strong> przekazujemy do wysyłki tego samego dnia.</li><li><strong>Zamówienia złożone w piątek</strong> realizujemy w najbliższy poniedziałek, aby uniknąć przetrzymywania przesyłek w magazynach logistycznych.</li></ul>' => '<ul><li><strong>Zamówienia złożone do niedzieli do 23:59</strong> wysyłamy w poniedziałek, a dostarczamy we wtorek.</li><li><strong>Zamówienia złożone do wtorku do 23:59</strong> wysyłamy w środę, a dostarczamy w czwartek.</li></ul><p>Wysyłamy tylko w poniedziałki i środy, dzięki temu paczki nie czekają w magazynach przez weekend.</p>',
 );
 
-// Zakładka "Sposób przygotowania": oba kroki miały tytuł "Rozgrzej piekarnik…", drugi (z czasem pieczenia) dostaje swój.
+// "Sposób przygotowania" tab: both steps were titled "Rozgrzej piekarnik…", the second one (with baking time) gets its own.
 $tzp_items = static function ( array &$row ) {
 	if ( 'Rozgrzej piekarnik i umieść zapiekankę' === ( $row['title'] ?? '' ) && 0 === strpos( (string) ( $row['subtitle'] ?? '' ), 'Czas:' ) ) {
 		$row['title'] = 'Piecz zapiekankę';
@@ -68,7 +68,7 @@ $tzp_items = static function ( array &$row ) {
 	return 0;
 };
 
-// Opisy produktów.
+// Product descriptions.
 $tzp_product_texts = array(
 	'6 dni od dnia dostarczenia'             => '7 dni od dnia dostarczenia',
 	'(6 dni od dostarczenia)'                => '(7 dni od dostarczenia)',
@@ -86,7 +86,7 @@ $tzp_log = static function ( $label, $count ) {
 };
 
 /*
- * 1. Dokumenty Elementora.
+ * 1. Elementor documents.
  */
 $tzp_find_post = static function ( $meta_key, $meta_value, $post_type ) {
 	$ids = get_posts(
@@ -165,7 +165,7 @@ foreach ( $tzp_docs as $label => $doc_id ) {
 }
 
 /*
- * 2. Tekst zakładki w opcjach Woodmarta.
+ * 2. Tab text in Woodmart options.
  */
 $tzp_options = get_option( 'xts-woodmart-options' );
 
@@ -180,7 +180,7 @@ if ( is_array( $tzp_options ) && isset( $tzp_options['additional_tab_text'] ) ) 
 }
 
 /*
- * 3. Opisy produktów.
+ * 3. Product descriptions.
  */
 $tzp_product_ids = wc_get_products(
 	array(
@@ -216,7 +216,7 @@ $total += $count;
 $tzp_log( 'Opisy produktów (' . $products . ' produktów)', $count );
 
 /*
- * 4. Atrybut "Termin przydatności".
+ * 4. "Termin przydatności" attribute.
  */
 $tzp_tax = 'pa_termin-przydatnosci';
 $tzp_old = taxonomy_exists( $tzp_tax ) ? get_term_by( 'name', '6 dni', $tzp_tax ) : false;

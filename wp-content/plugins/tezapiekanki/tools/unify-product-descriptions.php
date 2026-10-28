@@ -1,21 +1,22 @@
 <?php
 /**
- * Ujednolicenie opisów zapiekanek z kartami produktów od klienta (20.10.2026).
+ * Aligns the zapiekanka descriptions with the client's product cards (2026-10-20).
  *
- * Uruchomienie (WP-CLI):
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/unify-product-descriptions.php           (podgląd, nic nie zapisuje)
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/unify-product-descriptions.php apply     (zapis)
+ * Usage (WP-CLI):
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/unify-product-descriptions.php           (preview, saves nothing)
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/unify-product-descriptions.php apply     (save)
  *
- * Zmienia opis i krótki opis produktów z kategorii Zapiekanki (także ukrytych kopii do zestawów) przez API WooCommerce:
- * - sery: według kart każda zapiekanka ma goudę, mozzarellę i parmezan, a długie opisy mówiły o "dwóch serach"
- *   (krótkie opisy już wymieniały parmezan),
- * - literówki w roku receptury farszu: "z 1886 roku" (Szwedzka), "z 1887 roku" (z Szynką), wszędzie indziej 1987,
- * - "Spinata Piccante" → "Spianata Piccante" (nazwa salami, Salami),
- * - "zapiekance Szefa" → "zapiekance na ostro" (stara nazwa w opisie ukrytych kopii "na ostro"),
- * - nagłówek H1 na początku opisu → H2 (na karcie produktu H1 to już nazwa produktu, dwa H1 na stronie to błąd SEO).
+ * Changes the description and short description of products in the Zapiekanki category (including hidden bundle copies)
+ * via the WooCommerce API:
+ * - cheeses: according to the cards every zapiekanka has gouda, mozzarella and parmesan, while the long descriptions
+ *   mentioned "two cheeses" (the short descriptions already listed parmesan),
+ * - typos in the filling recipe year: "z 1886 roku" (Szwedzka), "z 1887 roku" (z Szynką), 1987 everywhere else,
+ * - "Spinata Piccante" → "Spianata Piccante" (salami name, Salami),
+ * - "zapiekance Szefa" → "zapiekance na ostro" (old name in the description of the hidden "na ostro" copies),
+ * - H1 heading at the start of the description → H2 (on the product page H1 is already the product name, two H1s on a page is an SEO error).
  *
- * Bez zmian: sosy i dodatki (to saszetki dołączane do paczki, nie ma ich na kartach) i zdania o dodatkach do
- * zamówienia (czekają na odpowiedź klienta, czy da się je zamówić).
+ * Unchanged: sauces and extras (sachets added to the parcel, not on the cards) and sentences about order add-ons
+ * (waiting for the client to confirm whether they can be ordered).
  *
  * @package tezapiekanki
  */
@@ -26,7 +27,7 @@ $tzp_apply = in_array( 'apply', (array) ( $args ?? array() ), true );
 
 $tzp_parmezan = 'Do tego <strong>parmezan</strong>, który wzmacnia smak całości. ';
 
-// Kolejność ma znaczenie (np. lista serów przed zamianą "To duet").
+// Order matters (e.g. the cheese list before the "To duet" replacement).
 $tzp_rules = array(
 	'H1 → H2'                    => array( '#<h1(\s[^>]*)?>(.*?)</h1>#su', '<h2$1>$2</h2>' ),
 	'nagłówek sekcji serów'      => array( '#<h3>Ser gouda i mozzarella</h3>#u', '<h3>Sery gouda, mozzarella i parmezan</h3>' ),

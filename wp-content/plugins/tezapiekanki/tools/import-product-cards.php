@@ -1,26 +1,26 @@
 <?php
 /**
- * Karty produktów od klienta (20.10.2026): PDF-y do mediów, wagi i wartości odżywcze na produktach.
+ * Product cards from the client (2026-10-20): PDFs to the media library, weights and nutrition values on products.
  *
- * Uruchomienie (WP-CLI, jako administrator):
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/import-product-cards.php --user=<login>          (podgląd, nic nie zapisuje)
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/import-product-cards.php apply --user=<login>    (zapis)
+ * Usage (WP-CLI, as administrator):
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/import-product-cards.php --user=<login>          (preview, saves nothing)
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/import-product-cards.php apply --user=<login>    (save)
  *
- * Źródło: jeden PDF od klienta z 11 kartami (strona = smak), pocięty na pliki w tools/karty-produktow/.
- * Wartości niżej przepisane z kart (w 100 g produktu przed pieczeniem, waga całej zapiekanki).
+ * Source: a single PDF from the client with 11 cards (page = flavour), split into files in tools/karty-produktow/.
+ * Values below copied from the cards (per 100 g of product before baking, weight of the whole zapiekanka).
  *
- * Co robi (API WordPressa i WooCommerce, nie SQL-em):
- * 1. Wgrywa PDF-y do mediów (raz; rozpoznaje je po meta _tzp_card, nowy plik w tools/ = nowy załącznik).
- * 2. Atrybuty: nowe "Kwasy tłuszczowe nasycone" (pa_kwasy-nasycone) i "Cukry" (pa_cukry), nazwy jak na etykiecie
- *    ("Kalorie" → "Wartość energetyczna", "Tłuszcze" → "Tłuszcz"), term "Mozarella" → "Mozzarella" (adres termu bez zmian).
- * 3. Każdy smak: produkt widoczny i ukryte kopie do zestawów (ta sama nazwa w kategorii Zapiekanki) dostają wagę,
- *    wartości odżywcze, sery z karty i pole "kartaproduktowa" z linkiem do PDF-a (format jak dotąd, czyta je też stary
- *    widget "Pobierz kartę produktu"). "Zapiekanka na ostro" nie miała żadnych atrybutów: dochodzą mięso, składnik
- *    dodatkowy i termin przydatności.
- * 4. Usuwa termy wagi i wartości odżywczych, których nie używa już żaden produkt.
+ * What it does (WordPress and WooCommerce APIs, no SQL):
+ * 1. Uploads the PDFs to the media library (once; recognised by the _tzp_card meta, a new file in tools/ = a new attachment).
+ * 2. Attributes: new "Kwasy tłuszczowe nasycone" (pa_kwasy-nasycone) and "Cukry" (pa_cukry), names as on the label
+ *    ("Kalorie" → "Wartość energetyczna", "Tłuszcze" → "Tłuszcz"), term "Mozarella" → "Mozzarella" (term slug unchanged).
+ * 3. Each flavour: the visible product and the hidden bundle copies (same name in the Zapiekanki category) get weight,
+ *    nutrition values, cheeses from the card and the "kartaproduktowa" field with a link to the PDF (same format as before,
+ *    also read by the old "Pobierz kartę produktu" widget). "Zapiekanka na ostro" had no attributes at all: meat,
+ *    extra ingredient and shelf life are added.
+ * 4. Deletes weight and nutrition terms no longer used by any product.
  *
- * Kontrola: energia z makro (9/4/4 kcal, 37/17/17 kJ na 1 g tłuszczu, węglowodanów i białka) różna od karty o więcej
- * niż 5% = ostrzeżenie do wyjaśnienia z klientem (wartości z karty i tak trafiają na stronę).
+ * Check: energy from macros (9/4/4 kcal, 37/17/17 kJ per 1 g of fat, carbohydrates and protein) differing from the card
+ * by more than 5% = warning to clarify with the client (the card values go to the site anyway).
  *
  * @package tezapiekanki
  */
@@ -41,7 +41,7 @@ require_once ABSPATH . 'wp-admin/includes/file.php';
 require_once ABSPATH . 'wp-admin/includes/media.php';
 require_once ABSPATH . 'wp-admin/includes/image.php';
 
-// Kolejność kolumn: waga [g], kJ, kcal, tłuszcz, w tym nasycone, węglowodany, w tym cukry, białko, sól [g].
+// Column order: weight [g], kJ, kcal, fat, of which saturates, carbohydrates, of which sugars, protein, salt [g].
 $tzp_cards = array(
 	'Zapiekanka Tradycyjna'  => array( 'tradycyjna', 319, 829, 198, '6,7', '4,4', '23,6', '2,1', '11,2', '1,3' ),
 	'Zapiekanka Wiejska'     => array( 'wiejska', 449, 799, 191, '8,3', '4,4', '17,0', '1,5', '12,2', '1,4' ),
@@ -53,17 +53,17 @@ $tzp_cards = array(
 	'Zapiekanka na dziko'    => array( 'na-dziko', 366, 928, 222, '7,9', '5,4', '20,7', '1,9', '13,0', '1,5' ),
 	'Zapiekanka Salami'      => array( 'salami', 349, 880, 211, '8,5', '5,0', '21,6', '1,9', '12,2', '1,5' ),
 	'Zapiekanka na ostro'    => array( 'na-ostro', 404, 863, 206, '9,5', '4,9', '19,5', '2,2', '10,9', '1,5' ),
-	// Na karcie "9.7 g" (kropka), zapisujemy jak pozostałe.
+	// The card says "9.7 g" (dot); stored the same way as the others.
 	'Zapiekanka Szwedzka'    => array( 'szwedzka', 379, 818, 196, '7,4', '4,5', '22,7', '3,5', '9,7', '1,2' ),
 );
 
-// Sery z kart: wszystkie smaki mają goudę, mozzarellę i parmezan, Góralska i Mega Serowa także oscypek.
+// Cheeses from the cards: all flavours have gouda, mozzarella and parmesan, Góralska and Mega Serowa also oscypek.
 $tzp_cheese_extra = array(
 	'Zapiekanka Góralska'    => array( 'Oscypek' ),
 	'Zapiekanka Mega Serowa' => array( 'Oscypek' ),
 );
 
-// Atrybuty, których "na ostro" nie miała wcale (dane z karty i opisu produktu).
+// Attributes "na ostro" did not have at all (data from the card and the product description).
 $tzp_extra_terms = array(
 	'Zapiekanka na ostro' => array(
 		'pa_mieso'               => array( 'Chorizo' ),
@@ -72,7 +72,7 @@ $tzp_extra_terms = array(
 	),
 );
 
-// Atrybuty wagi i wartości odżywczych w kolejności z etykiety. Pozostałe atrybuty produktu idą za nimi bez zmian.
+// Weight and nutrition attributes in label order. The product's other attributes follow them unchanged.
 $tzp_nutrition_attrs = array(
 	'pa_waga'           => 'Waga',
 	'pa_kalorie'        => 'Wartość energetyczna',
@@ -89,7 +89,7 @@ $tzp_log = static function ( $msg ) use ( $tzp_apply ) {
 };
 
 /*
- * 1. Atrybuty (taksonomie).
+ * 1. Attributes (taxonomies).
  */
 foreach ( $tzp_nutrition_attrs as $tax => $label ) {
 	$slug = substr( $tax, 3 );
@@ -124,7 +124,7 @@ foreach ( $tzp_nutrition_attrs as $tax => $label ) {
 					$id,
 					array(
 						'name'         => $label,
-						'slug'         => $slug, // Bez tego WooCommerce zrobiłby slug z nazwy i zmienił taksonomię.
+						'slug'         => $slug, // Otherwise WooCommerce would derive the slug from the name and change the taxonomy.
 						'type'         => $attr->type,
 						'order_by'     => $attr->order_by,
 						'has_archives' => $attr->has_archives,
@@ -138,7 +138,7 @@ foreach ( $tzp_nutrition_attrs as $tax => $label ) {
 		}
 	}
 
-	// Taksonomia nowego atrybutu rejestruje się dopiero przy następnym żądaniu.
+	// A new attribute's taxonomy is only registered on the next request.
 	if ( ! taxonomy_exists( $tax ) ) {
 		register_taxonomy(
 			$tax,
@@ -164,8 +164,8 @@ if ( $mozarella ) {
 }
 
 /**
- * ID termu o tej nazwie, a gdy go nie ma, nowy term. Slug z przecinkiem zamienionym na myślnik ("1,5 g" → "1-5-g"),
- * żeby "1,5 g" i "15 g" nie trafiły na ten sam slug. W podglądzie nowy term ma ID 0.
+ * ID of the term with this name, or a new term if there is none. Slug with the comma replaced by a hyphen ("1,5 g" → "1-5-g"),
+ * so that "1,5 g" and "15 g" do not end up with the same slug. In preview a new term has ID 0.
  */
 $tzp_term = static function ( $tax, $name ) use ( $tzp_apply ) {
 	$term = get_term_by( 'name', $name, $tax );
@@ -191,7 +191,7 @@ $tzp_term = static function ( $tax, $name ) use ( $tzp_apply ) {
 };
 
 /*
- * 2. PDF-y.
+ * 2. PDFs.
  */
 $tzp_card_attachment = static function ( $slug, $title, $parent ) use ( $tzp_apply, $tzp_log ) {
 	$file = 'karta-produktu-zapiekanka-' . $slug . '.pdf';
@@ -226,8 +226,8 @@ $tzp_card_attachment = static function ( $slug, $title, $parent ) use ( $tzp_app
 	$tmp = wp_tempnam( $file );
 	copy( $path, $tmp );
 
-	// Bez produktu jako rodzica: WordPress wgrałby plik do folderu z datą produktu (np. uploads/2025/01). Globalny $post
-	// też trzeba wyczyścić, bo get_post( 0 ) w media_handle_sideload() zwraca właśnie jego.
+	// Without the product as parent: otherwise WordPress would upload the file into the product's date folder (e.g. uploads/2025/01).
+	// The global $post must be cleared too, because get_post( 0 ) in media_handle_sideload() returns it.
 	$GLOBALS['post'] = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride
 	$id              = media_handle_sideload(
 		array(
@@ -242,7 +242,7 @@ $tzp_card_attachment = static function ( $slug, $title, $parent ) use ( $tzp_app
 		WP_CLI::error( "PDF $file: " . $id->get_error_message() );
 	}
 
-	// "Przesłano do" w mediach = widoczny produkt.
+	// "Uploaded to" in the media library = the visible product.
 	wp_update_post(
 		array(
 			'ID'          => $id,
@@ -250,7 +250,7 @@ $tzp_card_attachment = static function ( $slug, $title, $parent ) use ( $tzp_app
 		)
 	);
 
-	// Stara wersja zostaje w mediach, ale przestaje być kartą tego smaku.
+	// The old version stays in the media library but is no longer this flavour's card.
 	if ( $existing ) {
 		delete_post_meta( $existing[0], '_tzp_card' );
 	}
@@ -262,7 +262,7 @@ $tzp_card_attachment = static function ( $slug, $title, $parent ) use ( $tzp_app
 };
 
 /*
- * 3. Produkty.
+ * 3. Products.
  */
 $tzp_num = static function ( $value ) {
 	return (float) str_replace( ',', '.', $value );
@@ -307,7 +307,7 @@ foreach ( $tzp_cards as $title => $card ) {
 	);
 	$parent  = $visible ? $visible[0] : $ids[0];
 
-	// Kontrola energii z makro.
+	// Energy check from macros.
 	$calc_kcal = 9 * $tzp_num( $fat ) + 4 * $tzp_num( $carb ) + 4 * $tzp_num( $protein );
 	$calc_kj   = 37 * $tzp_num( $fat ) + 17 * $tzp_num( $carb ) + 17 * $tzp_num( $protein );
 
@@ -347,7 +347,7 @@ foreach ( $tzp_cards as $title => $card ) {
 			$old_names = isset( $current[ $tax ] ) ? wp_list_pluck( (array) $current[ $tax ]->get_terms(), 'name' ) : array();
 			$old       = $old_names ? implode( ' | ', $old_names ) : '-';
 			$new       = implode( ' | ', $names );
-			// Porównanie zbiorów (kolejność termów bez znaczenia); w podglądzie term "Mozarella" ma jeszcze starą nazwę.
+			// Set comparison (term order irrelevant); in preview the "Mozarella" term still has its old name.
 			$old_set = str_replace( 'Mozarella', 'Mozzarella', $old_names );
 			$new_set = $names;
 			sort( $old_set );
@@ -377,7 +377,7 @@ foreach ( $tzp_cards as $title => $card ) {
 			continue;
 		}
 
-		// Nowa kolejność: waga i wartości odżywcze jak na etykiecie, potem reszta w dotychczasowej kolejności.
+		// New order: weight and nutrition values as on the label, then the rest in the existing order.
 		$ordered = array();
 		foreach ( array_keys( $tzp_nutrition_attrs ) as $tax ) {
 			$ordered[ $tax ] = null;
@@ -418,7 +418,7 @@ foreach ( $tzp_cards as $title => $card ) {
 }
 
 /*
- * 4. Nieużywane termy wagi i wartości odżywczych (stare wartości, literówki).
+ * 4. Unused weight and nutrition terms (old values, typos).
  */
 $orphans = 0;
 foreach ( array_keys( $tzp_nutrition_attrs ) as $tax ) {
@@ -440,7 +440,7 @@ foreach ( array_keys( $tzp_nutrition_attrs ) as $tax ) {
 			continue;
 		}
 
-		// W podglądzie produkty mają jeszcze stare termy, więc ta lista jest pełna dopiero przy zapisie.
+		// In preview products still have the old terms, so this list is only complete when saving.
 		$orphans++;
 		if ( $tzp_apply ) {
 			wp_delete_term( $term->term_id, $tax );

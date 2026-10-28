@@ -1,18 +1,18 @@
 <?php
 /**
- * Ustawienia wysyłki po uwagach klientki z 26.10: godzina graniczna 23:59, wysyłka zawsze 14,99 zł (od 300 zł za darmo).
+ * Shipping settings after the client's feedback of 2026-10-26: cutoff 23:59, shipping always 14.99 PLN (free from 300 PLN).
  *
- * Uruchomienie (WP-CLI):
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/update-shipping-settings.php           (podgląd)
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/update-shipping-settings.php apply     (zapis)
+ * Usage (WP-CLI):
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/update-shipping-settings.php           (preview)
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/update-shipping-settings.php apply     (save)
  *
- * 1. wc-ship-today-notice: godzina graniczna 23:59 dla każdego dnia wysyłki (było 20:00). Przesunięcia dni zostają:
- *    do niedzieli 23:59 → wysyłka w poniedziałek, do wtorku 23:59 → wysyłka w środę. W panelu: WooCommerce →
- *    Ship Today Notice, tabela godzin granicznych.
- * 2. Flexible Shipping: we wszystkich metodach flexible_shipping_single jedna reguła "Zawsze" 14,99 zł zamiast reguł
- *    wagowych (0-4 kg 14,99 zł, od 5 kg 9,99 zł; koszyk 4-5 kg nie łapał się na żadną regułę i miał wysyłkę 0 zł).
- *    Darmowa wysyłka od 300 zł to osobne ustawienie metody ("Darmowa wysyłka"), zostaje bez zmian.
- *    W panelu: WooCommerce → Ustawienia → Wysyłka → Polska → metoda → Reguły: jedna reguła "Zawsze", koszt 14.99.
+ * 1. wc-ship-today-notice: cutoff 23:59 for every shipping day (was 20:00). Day offsets stay the same:
+ *    by Sunday 23:59 → shipped Monday, by Tuesday 23:59 → shipped Wednesday. In the admin: WooCommerce →
+ *    Ship Today Notice, cutoff times table.
+ * 2. Flexible Shipping: in every flexible_shipping_single method a single "Zawsze" (always) rule of 14.99 PLN instead of
+ *    weight rules (0-4 kg 14.99 PLN, from 5 kg 9.99 PLN; a 4-5 kg cart matched no rule and got 0 PLN shipping).
+ *    Free shipping from 300 PLN is a separate method setting ("Darmowa wysyłka") and stays unchanged.
+ *    In the admin: WooCommerce → Settings → Shipping → Polska → method → Rules: a single "Zawsze" rule, cost 14.99.
  *
  * @package tezapiekanki
  */
@@ -25,7 +25,7 @@ $tzp_cost   = '14.99';
 $changes    = 0;
 
 /*
- * 1. Godzina graniczna.
+ * 1. Cutoff time.
  */
 $tzp_stn = get_option( 'wc_ship_today_notice_options' );
 
@@ -41,7 +41,7 @@ if ( ! is_array( $tzp_stn ) ) {
 		if ( $tzp_apply ) {
 			$tzp_stn['cutoff_times'] = $new;
 			update_option( 'wc_ship_today_notice_options', $tzp_stn );
-			// Czas wysyłki w danych produktu dla Google (class-product-schema.php) jest liczony z terminów.
+			// The shipping time in the product data for Google (class-product-schema.php) is computed from the schedule.
 			delete_transient( 'tzp_schema_delivery_time' );
 		}
 	} else {
@@ -50,7 +50,7 @@ if ( ! is_array( $tzp_stn ) ) {
 }
 
 /*
- * 2. Reguły Flexible Shipping.
+ * 2. Flexible Shipping rules.
  */
 $tzp_rules = wp_json_encode(
 	array(

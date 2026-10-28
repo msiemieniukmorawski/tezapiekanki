@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       TeZapiekanki
- * Description:       Funkcje sklepu tezapiekanki.pl niezależne od motywu: belka o wysyłce z popupem, FAQ rozwijane z danymi strukturalnymi (widget Elementora), wartość odżywcza z kartą produktu (PDF), piny smaków i dane produktu dla Google (wysyłka, zwroty). Terminy wysyłki i dostawy liczy wtyczka WooCommerce Ship Today Notice.
+ * Description:       Theme-independent features of the tezapiekanki.pl shop: shipping bar with a popup, collapsible FAQ with structured data (Elementor widget), nutrition facts with a product data sheet (PDF), flavor pins and product data for Google (shipping, returns). Shipping and delivery dates are calculated by the WooCommerce Ship Today Notice plugin.
  * Version:           1.2.0
  * Author:            MS-M.pl
  * Author URI:        https://ms-m.pl

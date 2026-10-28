@@ -1,17 +1,17 @@
 <?php
 /**
- * FAQ: pytania rozwijane po kliknięciu + dane strukturalne FAQPage.
+ * FAQ: click-to-expand questions + FAQPage structured data.
  *
- * - Markup: natywne <details>/<summary>. Rozwijanie działa bez JavaScriptu (także na stronach z cache LiteSpeed),
- *   z klawiatury i w czytnikach ekranu. "Jedno otwarte naraz" to atrybut name na <details> (przeglądarki bez wsparcia
- *   po prostu pozwalają otworzyć kilka). Płynne rozwijanie: CSS ::details-content (gdzie przeglądarka to obsługuje).
- * - Schema: pytania ze wszystkich bloków FAQ na stronie z włączoną schemą trafiają do jednego FAQPage (JSON-LD na końcu
- *   strony). Dwa osobne FAQPage na jednej stronie Google zgłasza jako błąd, a wbudowane akordeony Elementora wypisują
- *   schemę osobno dla każdego widgetu. Powtórzone pytania liczą się raz.
- * - Wytyczne Google: te same pytania oznaczaj schemą tylko w jednym miejscu serwisu (np. na stronie FAQ), w innych
- *   miejscach wyłącz schemę w widgecie.
+ * - Markup: native <details>/<summary>. Expanding works without JavaScript (also on LiteSpeed-cached pages),
+ *   from the keyboard and in screen readers. "One open at a time" is the name attribute on <details> (browsers without
+ *   support simply allow opening several). Smooth expanding: CSS ::details-content (where the browser supports it).
+ * - Schema: questions from all FAQ blocks on the page with schema enabled go into a single FAQPage (JSON-LD at the end
+ *   of the page). Google reports two separate FAQPage items on one page as an error, and Elementor's built-in accordions
+ *   print the schema separately for each widget. Repeated questions count once.
+ * - Google guidelines: mark up the same questions with schema in only one place on the site (e.g. the FAQ page);
+ *   elsewhere disable the schema in the widget.
  *
- * Użycie: widget Elementora "FAQ (zwiń / rozwiń)" (class-faq-widget.php) albo w kodzie Faq::render( $items, $args ).
+ * Usage: Elementor widget "FAQ (zwiń / rozwiń)" (class-faq-widget.php) or in code Faq::render( $items, $args ).
  *
  * @package tezapiekanki
  */
@@ -24,17 +24,17 @@ class Faq {
 
 	const STYLE = 'tzp-faq';
 
-	/** Opcja z ID strony "Najczęstsze pytania" (ustawia tools/create-faq-page.php). */
+	/** Option holding the ID of the "Najczęstsze pytania" page (set by tools/create-faq-page.php). */
 	const PAGE_OPTION = 'tzp_faq_page_id';
 
 	/**
-	 * Pytania do schemy: klucz = znormalizowane pytanie.
+	 * Questions for the schema: key = normalized question.
 	 *
 	 * @var array<string, array{question: string, answer: string}>
 	 */
 	private static $schema = array();
 
-	/** @var int Licznik bloków na stronie (unikalna nazwa grupy dla "jedno otwarte naraz"). */
+	/** @var int Block counter on the page (unique group name for "one open at a time"). */
 	private static $count = 0;
 
 	public static function init() {
@@ -73,7 +73,7 @@ class Faq {
 	}
 
 	/**
-	 * Adres strony ze wszystkimi pytaniami.
+	 * URL of the page with all questions.
 	 */
 	public static function page_url() {
 		$id  = (int) get_option( self::PAGE_OPTION );
@@ -83,12 +83,12 @@ class Faq {
 	}
 
 	/**
-	 * Lista pytań jako bloki rozwijane.
+	 * List of questions as collapsible blocks.
 	 *
-	 * @param array $items Lista [ 'question' => string, 'answer' => string (HTML) ].
-	 * @param array $args  open_first (bool) pierwsze otwarte, exclusive (bool) jedno otwarte naraz,
-	 *                     schema (bool) dodać do FAQPage, tag (span|h2|h3|h4) znacznik pytania, id (string),
-	 *                     more_text / more_url: link pod listą (np. "Zobacz wszystkie pytania"), more_align (left|center|right).
+	 * @param array $items List of [ 'question' => string, 'answer' => string (HTML) ].
+	 * @param array $args  open_first (bool) first one open, exclusive (bool) one open at a time,
+	 *                     schema (bool) add to FAQPage, tag (span|h2|h3|h4) question tag, id (string),
+	 *                     more_text / more_url: link below the list (e.g. "Zobacz wszystkie pytania"), more_align (left|center|right).
 	 * @return string HTML.
 	 */
 	public static function render( array $items, array $args = array() ) {
@@ -96,8 +96,8 @@ class Faq {
 			$args,
 			array(
 				'open_first' => false,
-				// Domyślnie można otworzyć kilka pytań naraz (decyzja z 19.10: zamykanie poprzedniego przesuwało treść,
-				// na telefonie trzeba było przewijać).
+				// By default several questions can be open at once (decided 2026-10-19: closing the previous one shifted
+				// the content, on phones you had to scroll).
 				'exclusive'  => false,
 				'schema'     => true,
 				'tag'        => 'span',
@@ -175,7 +175,7 @@ class Faq {
 	}
 
 	/**
-	 * @param array $items Lista [ 'question' => string, 'answer' => string ].
+	 * @param array $items List of [ 'question' => string, 'answer' => string ].
 	 */
 	public static function add_to_schema( array $items ) {
 		foreach ( $items as $item ) {
@@ -197,7 +197,7 @@ class Faq {
 	}
 
 	/**
-	 * Odpowiedź do schemy: tylko znaczniki, które Google dopuszcza w Answer.text, bez atrybutów (poza href).
+	 * Answer for the schema: only the tags Google allows in Answer.text, without attributes (except href).
 	 */
 	private static function schema_answer( $html ) {
 		$allowed = array(
@@ -227,7 +227,7 @@ class Faq {
 	}
 
 	/**
-	 * Jeden FAQPage na stronę, na końcu strony (po wyrenderowaniu treści, popupów i bloków HTML).
+	 * One FAQPage per page, at the end of the page (after content, popups and HTML blocks are rendered).
 	 */
 	public static function print_schema() {
 		if ( ! self::$schema || is_admin() ) {
@@ -252,7 +252,7 @@ class Faq {
 		}
 
 		/**
-		 * Pozwala zmienić albo wyłączyć (pusta tablica) schemę FAQPage na bieżącej stronie.
+		 * Allows changing or disabling (empty array) the FAQPage schema on the current page.
 		 *
 		 * @param array $data
 		 */
@@ -262,7 +262,7 @@ class Faq {
 			return;
 		}
 
-		// JSON_HEX_TAG: "</p>" w odpowiedziach nie zamknie znacznika <script>.
+		// JSON_HEX_TAG: "</p>" in answers won't close the <script> tag.
 		echo "\n" . '<script type="application/ld+json" class="tzp-faq-schema">' . wp_json_encode( $data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG ) . '</script>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput
 	}
 }

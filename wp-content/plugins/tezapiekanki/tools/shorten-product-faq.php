@@ -1,17 +1,17 @@
 <?php
 /**
- * Skraca FAQ w opisach produktów do pytań o konkretny smak; pytania ogólne są na stronie "Najczęstsze pytania".
+ * Shortens the FAQ in product descriptions to flavour-specific questions; general questions live on the "Najczęstsze pytania" page.
  *
- * Uruchomienie (WP-CLI):
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/shorten-product-faq.php           (podgląd, nic nie zapisuje)
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/shorten-product-faq.php apply     (zapis, z kopią opisów)
+ * Usage (WP-CLI):
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/shorten-product-faq.php           (preview, saves nothing)
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/shorten-product-faq.php apply     (save, with a backup of descriptions)
  *
- * Zostają pytania o: świeżość po dostawie, wysyłkę na świeżo, mrożenie, imprezy (zwykle 4). Znikają:
- * - "Czy mogę dodać do zapiekanki dodatkowe składniki?" (sklep nie ma takiej opcji, odpowiedź obiecywała dodatki),
- * - "Jak wygląda proces pakowania i transportu?", "Czy mogę zamówić różne smaki…?" (ogólne, są na stronie FAQ).
- * Numeracja "1. " w pytaniach znika (rozwijana lista jej nie potrzebuje), "Zapiekanka Szefa – na ostro" → "na ostro".
- * Dotyczy wszystkich produktów z sekcją FAQ (także ukrytych kopii do zestawów). Kopia opisów przed zapisem:
- * wp-content/uploads/tzp-backup/products-faq-<data>.json.
+ * Kept: questions about freshness after delivery, shipping fresh, freezing, parties (usually 4). Removed:
+ * - "Czy mogę dodać do zapiekanki dodatkowe składniki?" (the shop has no such option, the answer promised add-ons),
+ * - "Jak wygląda proces pakowania i transportu?", "Czy mogę zamówić różne smaki…?" (general, they are on the FAQ page).
+ * "1. " numbering in questions is dropped (the collapsible list does not need it), "Zapiekanka Szefa – na ostro" → "na ostro".
+ * Applies to all products with an FAQ section (including hidden bundle copies). Backup of descriptions before saving:
+ * wp-content/uploads/tzp-backup/products-faq-<date>.json.
  *
  * @package tezapiekanki
  */
@@ -49,7 +49,7 @@ $tzp_shorten = static function ( $html, &$log ) use ( $tzp_keep, $tzp_drop ) {
 
 	$new = substr( $html, 0, $start ) . $out . substr( $rest, $end );
 
-	// Stara nazwa smaku w FAQ "na ostro".
+	// Old flavour name in the "na ostro" FAQ.
 	return preg_replace( '/(zapiekank\p{L}*) Szefa\s*[–-]\s*na ostro/iu', '$1 na ostro', $new );
 };
 

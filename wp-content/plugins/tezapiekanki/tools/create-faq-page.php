@@ -1,20 +1,20 @@
 <?php
 /**
- * Strona "Najczęstsze pytania" (/faq/) + link w stopce + skrócone FAQ na stronie głównej.
+ * "Najczęstsze pytania" page (/faq/) + footer link + shortened FAQ on the front page.
  *
- * Uruchomienie (WP-CLI, jako administrator):
+ * Usage (WP-CLI, as administrator):
  *   wp eval-file wp-content/plugins/tezapiekanki/tools/create-faq-page.php --user=<login administratora>
  *
- * Co robi (API WordPressa i Elementora, nie SQL):
- * 1. Tworzy albo nadpisuje stronę (meta _tzp_page = faq, adres /faq/): wstęp, 4 grupy pytań w widgetach
- *    "FAQ (zwiń / rozwiń)" ze schemą FAQPage (jedna na stronę), na końcu "Napisz do nas". Opis dla Rank Math.
- *    ID strony trafia do opcji tzp_faq_page_id (z niej biorą adres linki "Zobacz wszystkie pytania").
- * 2. Dodaje "Najczęstsze pytania" do listy linków w stopce (HTML Block, lista z "Sposoby dostawy"), jeśli go nie ma.
- * 3. Strona główna: widget FAQ (tzp_faq) dostaje 4 pytania, których nie powtarza tekst SEO niżej na stronie,
- *    bez schemy (te pytania są oznaczone na stronie FAQ) i z przyciskiem "Zobacz wszystkie pytania".
- *    Wymaga wcześniejszej zamiany akordeonu: tools/convert-accordion-to-faq.php.
+ * What it does (WordPress and Elementor APIs, no SQL):
+ * 1. Creates or overwrites the page (meta _tzp_page = faq, URL /faq/): intro, 4 question groups in
+ *    "FAQ (zwiń / rozwiń)" widgets with FAQPage schema (one per page), "Napisz do nas" at the end. Rank Math description.
+ *    The page ID is stored in the tzp_faq_page_id option ("Zobacz wszystkie pytania" links take their URL from it).
+ * 2. Adds "Najczęstsze pytania" to the footer link list (HTML Block, the list containing "Sposoby dostawy") if missing.
+ * 3. Front page: the FAQ widget (tzp_faq) gets 4 questions not repeated by the SEO text further down the page,
+ *    without schema (these questions are marked up on the FAQ page) and with a "Zobacz wszystkie pytania" button.
+ *    Requires the accordion to be converted first: tools/convert-accordion-to-faq.php.
  *
- * Ponowne uruchomienie nadpisuje treść strony FAQ i FAQ na stronie głównej (ręczne zmiany w Elementorze przepadną).
+ * Re-running overwrites the FAQ page content and the front page FAQ (manual Elementor changes will be lost).
  *
  * @package tezapiekanki
  */
@@ -30,7 +30,7 @@ $tzp_url = static function ( $path ) {
 };
 
 /*
- * Treść. Odpowiedzi z dotychczasowych tekstów sklepu (FAQ strony głównej, opisy produktów, popup o wysyłce).
+ * Content. Answers taken from existing shop texts (front page FAQ, product descriptions, shipping popup).
  */
 $tzp_q = array(
 	'wysylka'     => array(
@@ -86,11 +86,11 @@ $tzp_groups = array(
 	array( 'Nasze <b>zapiekanki</b>', array( 'farsz', 'imprezy' ) ),
 );
 
-// Strona główna: pytania, których nie powtarza tekst SEO pod FAQ (mrożenie, farsz i Paczkomat mają tam własne sekcje).
+// Front page: questions not repeated by the SEO text below the FAQ (freezing, filling and Paczkomat have their own sections there).
 $tzp_home = array( 'wysylka', 'bezpiecznie', 'swiezosc', 'pieczenie' );
 
 /*
- * Elementy Elementora.
+ * Elementor elements.
  */
 $tzp_id = static function () {
 	return substr( md5( uniqid( '', true ) ), 0, 7 );
@@ -228,7 +228,7 @@ $tzp_elements = array(
 );
 
 /*
- * 1. Strona FAQ.
+ * 1. FAQ page.
  */
 $documents = \Elementor\Plugin::$instance->documents;
 
@@ -277,7 +277,7 @@ update_post_meta( $tzp_page_id, 'rank_math_description', 'Odpowiedzi na najczęs
 WP_CLI::log( 'Strona FAQ: ' . get_permalink( $tzp_page_id ) );
 
 /*
- * 2. Link w stopce.
+ * 2. Footer link.
  */
 $tzp_footer_done = false;
 $tzp_blocks      = get_posts(
@@ -359,7 +359,7 @@ if ( ! $tzp_footer_done ) {
 }
 
 /*
- * 3. FAQ na stronie głównej.
+ * 3. Front page FAQ.
  */
 $tzp_front = (int) get_option( 'page_on_front' );
 $tzp_home_done = false;

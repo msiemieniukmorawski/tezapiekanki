@@ -1,5 +1,5 @@
 /**
- * Podgląd na żywo tekstów belki w Wygląd → Dostosuj (pozostałe ustawienia odświeżają podgląd).
+ * Live preview of the bar texts in Appearance → Customize (other settings refresh the preview).
  */
 (function (api) {
   'use strict';

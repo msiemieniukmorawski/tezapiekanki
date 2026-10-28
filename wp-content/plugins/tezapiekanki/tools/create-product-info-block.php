@@ -1,20 +1,20 @@
 <?php
 /**
- * Blok "Info praktyczne" na karcie produktu: 4 ikony z tekstami pod przyciskiem "Dodaj do koszyka".
+ * "Info praktyczne" block on the product page: 4 icons with captions below the "Dodaj do koszyka" button.
  *
- * Uruchomienie (WP-CLI, jako administrator):
+ * Usage (WP-CLI, as administrator):
  *   wp eval-file wp-content/plugins/tezapiekanki/tools/create-product-info-block.php --user=<login administratora>
  *
- * Co robi (przez API WordPressa i Elementora, nie SQL-em):
- * 1. Wgrywa ikony z assets/icons/*.png do biblioteki mediów (raz, rozpoznaje je po meta _tzp_icon).
- * 2. Tworzy albo nadpisuje HTML Block Woodmarta (cms_block) "Info praktyczne" (meta _tzp_block = product-info):
- *    kontener z 4 widgetami wd_infobox. Klient edytuje go później w Elementorze (menu HTML Blocks).
- * 3. Wstawia do layoutów kart produktu (6480 zapiekanki, 6533 zestawy) widget Shortcode [html_block id="…"] zaraz
- *    pod widgetem "Dodaj do koszyka", z wyłączonym cache elementu (zmiany w bloku widać od razu). Layout, w którym
- *    ten shortcode już jest, zostaje bez zmian.
+ * What it does (via WordPress and Elementor APIs, no SQL):
+ * 1. Uploads the icons from assets/icons/*.png to the media library (once, recognised by the _tzp_icon meta).
+ * 2. Creates or overwrites the Woodmart HTML Block (cms_block) "Info praktyczne" (meta _tzp_block = product-info):
+ *    a container with 4 wd_infobox widgets. The client edits it later in Elementor (HTML Blocks menu).
+ * 3. Inserts a Shortcode widget [html_block id="…"] into the product page layouts (6480 zapiekanki, 6533 bundles)
+ *    right below the "Dodaj do koszyka" widget, with element cache disabled (block changes show immediately). A layout
+ *    that already contains this shortcode is left unchanged.
  *
- * Ikony: źródła SVG w assets/icons/*.svg, PNG 128x128 wyrenderowane z nich (WordPress bez dodatkowej wtyczki nie
- * przyjmuje SVG do biblioteki mediów).
+ * Icons: SVG sources in assets/icons/*.svg, 128x128 PNGs rendered from them (WordPress does not accept SVG in the
+ * media library without an extra plugin).
  *
  * @package tezapiekanki
  */
@@ -33,14 +33,14 @@ require_once ABSPATH . 'wp-admin/includes/file.php';
 require_once ABSPATH . 'wp-admin/includes/media.php';
 require_once ABSPATH . 'wp-admin/includes/image.php';
 
-// Layout => kategoria produktu, który posłuży za kontekst przy zapisie (Elementor renderuje wtedy widgety do tekstu,
-// a widgety karty produktu, np. galeria, wymagają globalnego $product).
+// Layout => category of the product used as context when saving (Elementor then renders widgets to plain text,
+// and product page widgets, e.g. the gallery, require the global $product).
 $tzp_layouts = array(
 	6480 => 'zapiekanki',
 	6533 => 'zestawy-zapiekanek',
 );
 
-// Pogrubiony tytuł i krótki opis pod nim (decyzja Marcina z 19.10: samo "6 dni od dostawy" było niejasne; od 26.10 7 dni w lodówce).
+// Bold title with a short description below (decided 2026-10-19: "6 dni od dostawy" alone was unclear; since 2026-10-26, 7 days in the fridge).
 $tzp_items = array(
 	array( 'icon' => 'info-6-dni.png', 'title' => '7 dni świeżości', 'text' => 'w lodówce, liczone od dostawy' ),
 	array( 'icon' => 'info-lodowka.png', 'title' => 'Trzymaj w lodówce', 'text' => 'zaraz po odbiorze paczki' ),
@@ -61,7 +61,7 @@ $tzp_px = static function ( $size ) {
 };
 
 /*
- * 1. Ikony.
+ * 1. Icons.
  */
 $tzp_icon = static function ( $file ) {
 	$existing = get_posts(
@@ -132,8 +132,8 @@ foreach ( $tzp_items as $item ) {
 			'woodmart_color_scheme'          => 'dark',
 			'title'                          => $item['title'],
 			'content'                        => '<p>' . esc_html( $item['text'] ) . '</p>',
-			// Bez pustych wartości widget wstawia przykładowy podtytuł i przycisk "Read more", a link "#" robi z całego
-			// kafelka link na górę strony.
+			// Without empty values the widget inserts a sample subtitle and a "Read more" button, and a "#" link turns the
+			// whole tile into a link to the top of the page.
 			'subtitle'                       => '',
 			'btn_text'                       => '',
 			'link'                           => array(
@@ -195,8 +195,8 @@ $block_elements = array(
 				'row'      => '10',
 				'isLinked' => false,
 			),
-			// Mniejsze odstępy w infoboxach (ikona-tekst, tytuł-opis): woodmart-child/style.css, sekcja "Info praktyczne".
-			// W kontenerze klasa CSS to "css_classes" (w widgetach "_css_classes").
+			// Tighter spacing inside the infoboxes (icon-text, title-description): woodmart-child/style.css, "Info praktyczne" section.
+			// On a container the CSS class setting is "css_classes" (on widgets "_css_classes").
 			'css_classes'    => 'tzp-info',
 			'padding'        => array(
 				'unit'     => 'px',
@@ -251,7 +251,7 @@ if ( $block ) {
 $documents->get( $block_id, false )->save( array( 'elements' => $block_elements ) );
 
 /*
- * 3. Layouty kart produktu.
+ * 3. Product page layouts.
  */
 $shortcode = sprintf( '[html_block id="%d"]', $block_id );
 
@@ -261,7 +261,7 @@ $widget = array(
 	'widgetType' => 'shortcode',
 	'settings'   => array(
 		'shortcode'      => $shortcode,
-		// "yes" = element renderowany przy każdym wyświetleniu, bez cache elementów Elementora (24 h).
+		// "yes" = element rendered on every view, bypassing the Elementor element cache (24 h).
 		'_element_cache' => 'yes',
 		'_css_classes'   => 'tzp-product-info',
 	),
@@ -281,8 +281,8 @@ $contains = static function ( $elements ) use ( &$contains, $block_id ) {
 };
 
 /**
- * Wstawia blok pod widgetem "Dodaj do koszyka". Gdy jego kontener układa elementy w rzędzie (np. cena obok przycisku
- * na telefonie), blok idzie do nowego kontenera pod tym kontenerem, z tymi samymi odstępami.
+ * Inserts the block below the "Dodaj do koszyka" widget. When its container lays elements out in a row (e.g. price next
+ * to the button on mobile), the block goes into a new container below that container, with the same spacing.
  */
 $insert = static function ( array &$elements ) use ( &$insert, $widget, $tzp_id ) {
 	foreach ( $elements as $i => &$el ) {

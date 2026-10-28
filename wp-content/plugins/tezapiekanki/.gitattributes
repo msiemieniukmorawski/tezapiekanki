@@ -1,4 +1,4 @@
-# Pliki trzymamy w LF, tak jak na serwerze (bez zamiany na CRLF przy core.autocrlf).
+# Keep text files in LF, as on the server (no CRLF conversion with core.autocrlf).
 * text=auto eol=lf
 
 *.png binary

@@ -1,7 +1,7 @@
 /**
- * Belka o wysyłce: zamknięcie do końca dnia.
- * Popup otwiera motyw (wd_popup z wyzwalaczem na selektor .tzp-bar-link, dopinanym przez wtyczkę), tu tylko
- * zamykanie i zdarzenia dla GTM.
+ * Shipping bar: close until the end of the day.
+ * The popup is opened by the theme (wd_popup with a .tzp-bar-link selector trigger attached by the plugin); here only
+ * closing and GTM events.
  */
 (function () {
   'use strict';
@@ -14,7 +14,7 @@
   var key = bar.getAttribute('data-key') || 'tzp_bar_closed';
   var tz = bar.getAttribute('data-tz');
 
-  // Ta sama data co w skrypcie w <head> (Shipping_Bar::head_script), łącznie z wariantem awaryjnym.
+  // Same date as in the <head> script (Shipping_Bar::head_script), including the fallback.
   function today() {
     try {
       var o = {};
@@ -51,7 +51,7 @@
       return;
     }
 
-    // Zwinięcie wysokości zamiast skoku treści.
+    // Collapse the height instead of a content jump.
     bar.style.height = bar.offsetHeight + 'px';
     void bar.offsetHeight;
     bar.classList.add('tzp-bar--closing');

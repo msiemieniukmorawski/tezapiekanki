@@ -1,17 +1,17 @@
 <?php
 /**
- * Belka nad nagłówkiem, domyślnie: "Wysyłamy tylko 2 razy w tygodniu. Sprawdź dlaczego →".
+ * Bar above the header, default: "Wysyłamy tylko 2 razy w tygodniu. Sprawdź dlaczego →".
  *
- * - Teksty i działanie kliknięcia (popup, adres, nic) ustawia się w Wygląd → Dostosuj → "Belka o wysyłce"
- *   (class-shipping-bar-customizer.php), opcja tzp_shipping_bar.
- * - Wypisywana na wp_body_open (Woodmart woła go w header.php przed .wd-page-wrapper). Nagłówek leży absolutnie
- *   w .wd-page-wrapper, więc razem z treścią zjeżdża o wysokość belki.
- * - Popup: wybrany w ustawieniach popup Woodmarta dostaje w locie wyzwalacz "On selector click" = .tzp-bar-link
- *   (filtr get_post_metadata, tylko na froncie, nic nie zapisuje w bazie). Zmiana popupu w ustawieniach nie wymaga
- *   więc grzebania w ustawieniach popupów. Gdy popup się nie otworzy, link prowadzi pod adres z ustawień.
- * - Krzyżyk chowa belkę do końca dnia (data w localStorage, strefa czasowa WordPressa). Skrypt w <head> sprawdza
- *   ją przed wyrenderowaniem body, więc na stronach z cache LiteSpeed zamknięta belka nie miga.
- * - Ukryta w checkoucie (także thank you page).
+ * - Texts and click behavior (popup, URL, nothing) are set in Appearance → Customize → "Belka o wysyłce"
+ *   (class-shipping-bar-customizer.php), option tzp_shipping_bar.
+ * - Printed on wp_body_open (Woodmart calls it in header.php before .wd-page-wrapper). The header is absolutely positioned
+ *   inside .wd-page-wrapper, so it moves down by the bar height together with the content.
+ * - Popup: the Woodmart popup selected in the settings gets an "On selector click" = .tzp-bar-link trigger on the fly
+ *   (get_post_metadata filter, front end only, nothing is saved to the database). So changing the popup in the settings
+ *   needs no fiddling with popup settings. If the popup doesn't open, the link goes to the URL from the settings.
+ * - The close button hides the bar until the end of the day (date in localStorage, WordPress timezone). A script in <head>
+ *   checks it before body renders, so a closed bar doesn't flash on LiteSpeed-cached pages.
+ * - Hidden on checkout (also the thank-you page).
  *
  * @package tezapiekanki
  */
@@ -46,8 +46,8 @@ class Shipping_Bar {
 	}
 
 	/**
-	 * Ustawienia z opcji. Popup, który nie istnieje albo nie jest opublikowany, zamienia się na link pod adres.
-	 * Bez cache w zmiennej statycznej: w podglądzie Dostosuj wartości podmieniają filtry opcji.
+	 * Settings from the option. A popup that doesn't exist or isn't published turns into a link to the URL.
+	 * No static-variable cache: in the Customize preview the values are replaced by option filters.
 	 */
 	public static function settings() {
 		$saved = get_option( self::OPTION, array() );
@@ -73,7 +73,7 @@ class Shipping_Bar {
 	}
 
 	/**
-	 * Czy pokazać belkę na bieżącej stronie.
+	 * Whether to show the bar on the current page.
 	 */
 	public static function is_visible() {
 		$s = self::settings();
@@ -87,7 +87,7 @@ class Shipping_Bar {
 			&& ! self::is_elementor_preview();
 
 		/**
-		 * Pozwala ukryć belkę na wybranych stronach.
+		 * Allows hiding the bar on selected pages.
 		 *
 		 * @param bool $visible
 		 */
@@ -106,8 +106,8 @@ class Shipping_Bar {
 	}
 
 	/**
-	 * Zwykłe żądanie strony (bez panelu, AJAX-a, REST i WP-CLI). Tylko tu dopinamy wyzwalacz popupu, żeby edytor
-	 * Elementora go nie widział i nie zapisał na stałe (przy zmianie popupu stary dalej otwierałby się z belki).
+	 * A regular page request (not admin, AJAX, REST or WP-CLI). Only here do we attach the popup trigger, so the Elementor
+	 * editor doesn't see it and save it permanently (after switching popups the old one would still open from the bar).
 	 */
 	private static function is_frontend_request() {
 		return ! is_admin()
@@ -117,14 +117,14 @@ class Shipping_Bar {
 	}
 
 	/**
-	 * Dopina do ustawień wybranego popupu (Elementor, meta _elementor_page_settings) wyzwalacz po kliknięciu w belkę.
-	 * Wyłącza też w nim automatyczne otwarcie po czasie (w Woodmarcie domyślnie włączone, 0 s) i "persistent close"
-	 * (domyślnie włączone: po pierwszym zamknięciu popup już by się z belki nie otworzył).
+	 * Attaches a bar-click trigger to the selected popup's settings (Elementor, meta _elementor_page_settings).
+	 * Also disables its automatic open after a delay (enabled by default in Woodmart, 0 s) and "persistent close"
+	 * (enabled by default: after the first close the popup would no longer open from the bar).
 	 *
-	 * @param mixed  $value     Wartość z innych filtrów (null = odczyt z bazy).
-	 * @param int    $object_id ID wpisu.
-	 * @param string $meta_key  Klucz meta.
-	 * @param bool   $single    Czy pojedyncza wartość.
+	 * @param mixed  $value     Value from other filters (null = read from the database).
+	 * @param int    $object_id Post ID.
+	 * @param string $meta_key  Meta key.
+	 * @param bool   $single    Whether a single value is requested.
 	 * @return mixed
 	 */
 	public static function popup_trigger( $value, $object_id, $meta_key, $single ) {
@@ -157,21 +157,21 @@ class Shipping_Bar {
 		$settings['wd_popup_is_some_time_enabled']         = '';
 		$settings['wd_popup_persistent_close']             = '';
 
-		// get_metadata() przy $single zwraca pierwszy element tablicy.
+		// With $single, get_metadata() returns the first array element.
 		return array( $settings );
 	}
 
 	/**
-	 * Strefa czasowa do liczenia "dziś" w przeglądarce. Przy przesunięciu typu "+02:00" (bez nazwy strefy)
-	 * JS użyje czasu lokalnego przeglądarki.
+	 * Timezone for computing "today" in the browser. With an offset like "+02:00" (no zone name)
+	 * the JS falls back to the browser's local time.
 	 */
 	private static function timezone() {
 		return wp_timezone_string();
 	}
 
 	/**
-	 * Ukrywa zamkniętą belkę, zanim przeglądarka ją narysuje. data-no-optimize: LiteSpeed nie przesuwa
-	 * i nie opóźnia tego skryptu (JS defer na produkcji). W podglądzie Dostosuj belka jest zawsze widoczna.
+	 * Hides a closed bar before the browser paints it. data-no-optimize: LiteSpeed doesn't move
+	 * or defer this script (JS defer in production). In the Customize preview the bar is always visible.
 	 */
 	public static function head_script() {
 		if ( ! self::is_visible() ) {
@@ -190,7 +190,7 @@ class Shipping_Bar {
 			wp_json_encode( self::STORAGE_KEY )
 		);
 
-		echo '<script data-no-optimize="1">' . $script . '</script>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput -- stały kod, wartości przez wp_json_encode.
+		echo '<script data-no-optimize="1">' . $script . '</script>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput -- fixed code, values via wp_json_encode.
 	}
 
 	public static function assets() {
@@ -214,11 +214,11 @@ class Shipping_Bar {
 		$s = self::settings();
 
 		/**
-		 * Adres linku: cel przy działaniu "adres" albo zapasowy przy popupie (brak popupu na stronie,
-		 * skrypty motywu jeszcze się nie wczytały).
+		 * Link URL: the target for the "url" action, or the fallback for the popup (popup not on the page,
+		 * theme scripts not loaded yet).
 		 *
 		 * @param string $url
-		 * @param array  $s   Ustawienia belki.
+		 * @param array  $s   Bar settings.
 		 */
 		$url = apply_filters( 'tzp_shipping_bar_link', $s['url'], $s );
 
@@ -244,7 +244,7 @@ class Shipping_Bar {
 		?>
 		<div class="tzp-bar" role="region" aria-label="<?php esc_attr_e( 'Informacja o wysyłce', 'tezapiekanki' ); ?>" data-tz="<?php echo esc_attr( self::timezone() ); ?>" data-key="<?php echo esc_attr( self::STORAGE_KEY ); ?>">
 			<div class="tzp-bar__inner">
-				<?php echo $content; // phpcs:ignore WordPress.Security.EscapeOutput -- złożone z esc_html / esc_url / esc_attr wyżej. ?>
+				<?php echo $content; // phpcs:ignore WordPress.Security.EscapeOutput -- built from esc_html / esc_url / esc_attr above. ?>
 				<button type="button" class="tzp-bar__close" aria-label="<?php esc_attr_e( 'Zamknij do końca dnia', 'tezapiekanki' ); ?>">
 					<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
 				</button>

@@ -1,18 +1,18 @@
 <?php
 /**
- * Logo "TE Zapiekanki Skalbmierskie od 1987" zamiast "TE Zapiekanki est 1987" (decyzja Marcina z 20.10).
+ * "TE Zapiekanki Skalbmierskie od 1987" logo instead of "TE Zapiekanki est 1987" (decided 2026-10-20).
  *
- * Uruchomienie (WP-CLI, jako administrator):
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/replace-logo.php --user=<login>            (podgląd)
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/replace-logo.php apply --user=<login>      (zapis)
+ * Usage (WP-CLI, as administrator):
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/replace-logo.php --user=<login>            (preview)
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/replace-logo.php apply --user=<login>      (save)
  *
- * Logo w wersji "Skalbmierskie od 1987" jest w mediach od 06.2024 (Light.png białe, Black.png czarne; Black.png ma
- * też nagłówek maili). Gdy plików nie ma w mediach, skrypt wgrywa je z tools/logo/.
- * 1. Nagłówek Woodmarta (Header Builder, domyślny nagłówek): logo i logo przyklejonego nagłówka, desktop i telefon,
- *    białe SVG → Light.png. Zapis przez Header Buildera, więc CSS nagłówka też się przebudowuje.
- * 2. Dokumenty Elementora (stopka i bloki HTML, popupy, floating blocki; bez rewizji): czarne SVG → Black.png
- *    w pełnym rozmiarze (szerokość ustawia widget, jak dotąd).
- * Kopie przed zapisem: wp-content/uploads/tzp-backup/.
+ * The "Skalbmierskie od 1987" logo has been in the media library since 2024-06 (Light.png white, Black.png black; Black.png
+ * is also used in the email header). If the files are not in the media library, the script uploads them from tools/logo/.
+ * 1. Woodmart header (Header Builder, default header): logo and sticky header logo, desktop and mobile,
+ *    white SVG → Light.png. Saved through the Header Builder, so the header CSS is rebuilt too.
+ * 2. Elementor documents (footer and HTML blocks, popups, floating blocks; no revisions): black SVG → Black.png
+ *    in full size (width set by the widget, as before).
+ * Backups before saving: wp-content/uploads/tzp-backup/.
  *
  * @package tezapiekanki
  */
@@ -29,14 +29,14 @@ require_once ABSPATH . 'wp-admin/includes/file.php';
 require_once ABSPATH . 'wp-admin/includes/media.php';
 require_once ABSPATH . 'wp-admin/includes/image.php';
 
-// Stare logo: pliki SVG (białe w nagłówku, czarne w stopce).
+// Old logo: SVG files (white in the header, black in the footer).
 $tzp_old = array(
 	'light' => '/tezapiekankibialelogo\.svg$/',
 	'dark'  => '/tezapiekankiczarnelogo\.svg$/',
 );
 
 /**
- * Załącznik z logo: istniejący w mediach (po nazwie pliku) albo wgrany z tools/logo/.
+ * Logo attachment: existing in the media library (by file name) or uploaded from tools/logo/.
  */
 $tzp_logo = static function ( $file ) use ( $tzp_apply ) {
 	global $wpdb;
@@ -97,7 +97,7 @@ wp_mkdir_p( $tzp_backup_dir );
 $tzp_changes = 0;
 
 /*
- * 1. Nagłówek.
+ * 1. Header.
  */
 $tzp_builder = class_exists( '\XTS\Modules\Header_Builder' ) ? \XTS\Modules\Header_Builder::get_instance() : null;
 
@@ -139,7 +139,7 @@ if ( ! $tzp_builder ) {
 }
 
 /*
- * 2. Dokumenty Elementora.
+ * 2. Elementor documents.
  */
 global $wpdb;
 $tzp_docs = $wpdb->get_col(
@@ -162,7 +162,7 @@ foreach ( $tzp_docs as $doc_id ) {
 			if ( $url && preg_match( $tzp_old['dark'], $url ) ) {
 				$el['settings']['image']['id']  = $tzp_new['dark'];
 				$el['settings']['image']['url'] = $tzp_new['dark'] ? wp_get_attachment_url( $tzp_new['dark'] ) : '';
-				// SVG skalował się do szerokości widgetu; PNG w pełnym rozmiarze (1400 px) robi to samo i jest ostre na retinie.
+				// The SVG scaled to the widget width; a full-size PNG (1400 px) does the same and stays sharp on retina.
 				$el['settings']['image_size'] = 'full';
 				$count++;
 			}

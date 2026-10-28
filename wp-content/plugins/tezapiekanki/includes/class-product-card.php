@@ -1,15 +1,15 @@
 <?php
 /**
- * Wartość odżywcza i karta produktu (PDF) na karcie produktu.
+ * Nutrition facts and product data sheet (PDF) on the product page.
  *
- * Shortcode [tzp_nutrition] (layout 6480, w miejscu dawnego nagłówka, przycisku "Pobierz kartę produktu" i tabeli
- * Woodmarta): tabela jak na etykiecie (wartości w 100 g przed upieczeniem, "w tym" wcięte), waga zapiekanki i wyraźny
- * przycisk do karty PDF ze składem i alergenami.
- * Shortcode [tzp_product_card]: sam przycisk do karty PDF.
+ * Shortcode [tzp_nutrition] (layout 6480, in place of the former heading, "Pobierz kartę produktu" button and Woodmart
+ * table): a label-style table (values per 100 g before baking, "w tym" rows indented), the zapiekanka weight and a
+ * prominent button to the PDF sheet with ingredients and allergens.
+ * Shortcode [tzp_product_card]: just the PDF sheet button.
  *
- * Dane: atrybuty produktu (Produkty → Edytuj → Atrybuty), klient zmienia je jak dotąd. Link do PDF-a: pole własne
- * "kartaproduktowa" (gotowy link HTML albo sam adres). Bez danych shortcode niczego nie wypisuje, więc nie ma pustej
- * tabeli ani przycisku (np. na zestawach).
+ * Data: product attributes (Products → Edit → Attributes), the client edits them as before. PDF link: custom field
+ * "kartaproduktowa" (a ready HTML link or just the URL). Without data the shortcode outputs nothing, so there is no empty
+ * table or button (e.g. on bundles).
  *
  * @package tezapiekanki
  */
@@ -23,7 +23,7 @@ class Product_Card {
 	const STYLE = 'tzp-product';
 
 	/**
-	 * Wiersze tabeli: taksonomia atrybutu => [etykieta, wiersz "w tym"].
+	 * Table rows: attribute taxonomy => [label, "w tym" (sub) row].
 	 */
 	const ROWS = array(
 		'pa_kalorie'        => array( 'Wartość energetyczna', false ),
@@ -44,14 +44,14 @@ class Product_Card {
 	public static function register_assets() {
 		wp_register_style( self::STYLE, TZP_URL . 'assets/css/product.css', array(), asset_version( 'assets/css/product.css' ) );
 
-		// Na karcie produktu od razu w <head>, żeby tabela i piny nie mignęły bez stylów.
+		// On the product page enqueue right away in <head>, so the table and pins don't flash unstyled.
 		if ( function_exists( 'is_product' ) && is_product() ) {
 			wp_enqueue_style( self::STYLE );
 		}
 	}
 
 	/**
-	 * @param array|string $atts product (ID, domyślnie bieżący produkt), title.
+	 * @param array|string $atts product (ID, defaults to the current product), title.
 	 * @return string
 	 */
 	public static function nutrition_shortcode( $atts ) {
@@ -108,7 +108,7 @@ class Product_Card {
 		if ( $weight || $card ) {
 			$html .= '<div class="tzp-nutrition__foot">';
 			if ( $weight ) {
-				/* translators: %s: waga, np. "349 g" */
+				/* translators: %s: weight, e.g. "349 g" */
 				$html .= '<p class="tzp-nutrition__weight">' . sprintf( esc_html__( 'Waga zapiekanki: %s', 'tezapiekanki' ), '<strong>' . esc_html( $weight ) . '</strong>' ) . '</p>';
 			}
 			$html .= $card;
@@ -119,7 +119,7 @@ class Product_Card {
 	}
 
 	/**
-	 * @param array|string $atts product (ID, domyślnie bieżący produkt).
+	 * @param array|string $atts product (ID, defaults to the current product).
 	 * @return string
 	 */
 	public static function card_shortcode( $atts ) {
@@ -135,9 +135,9 @@ class Product_Card {
 	}
 
 	/**
-	 * Adres PDF-a z pola "kartaproduktowa": gotowy link <a href="…">…</a> (tak jest od początku) albo sam adres.
+	 * PDF URL from the "kartaproduktowa" field: a ready link <a href="…">…</a> (the original format) or just the URL.
 	 *
-	 * @param \WC_Product $product Produkt.
+	 * @param \WC_Product $product Product.
 	 * @return string
 	 */
 	public static function card_url( $product ) {
@@ -151,7 +151,7 @@ class Product_Card {
 	}
 
 	/**
-	 * @param \WC_Product $product Produkt.
+	 * @param \WC_Product $product Product.
 	 * @return string
 	 */
 	private static function card_link( $product ) {
@@ -173,8 +173,8 @@ class Product_Card {
 	}
 
 	/**
-	 * @param \WC_Product $product Produkt.
-	 * @param string      $tax     Taksonomia atrybutu.
+	 * @param \WC_Product $product Product.
+	 * @param string      $tax     Attribute taxonomy.
 	 * @return string
 	 */
 	private static function value( $product, $tax ) {
@@ -182,7 +182,7 @@ class Product_Card {
 	}
 
 	/**
-	 * @param int|string $id ID produktu albo 0 = bieżący.
+	 * @param int|string $id Product ID or 0 = current.
 	 * @return \WC_Product|null
 	 */
 	private static function product( $id ) {

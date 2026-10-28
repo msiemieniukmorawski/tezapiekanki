@@ -1,25 +1,25 @@
 <?php
 /**
- * Tworzy (albo nadpisuje) popup Woodmarta "Dlaczego wysyłamy tylko 2 razy w tygodniu?" dla belki o wysyłce.
+ * Creates (or overwrites) the Woodmart popup "Dlaczego wysyłamy tylko 2 razy w tygodniu?" for the shipping bar.
  *
- * Uruchomienie (WP-CLI, jako administrator):
+ * Usage (WP-CLI, as administrator):
  *   wp eval-file wp-content/plugins/tezapiekanki/tools/create-shipping-popup.php --user=<login administratora>
  *
- * Popup zapisuje się przez API dokumentów Elementora (nie SQL-em), więc później klient edytuje go normalnie
- * w Elementorze: menu Popups. Skrypt ustawia go też jako popup belki (Wygląd → Dostosuj → "Belka o wysyłce").
- * Ustawienia:
- * - bez zapisanego wyzwalacza: kliknięcie w belkę dopina wtyczka w locie (Shipping_Bar::popup_trigger), więc po
- *   wybraniu innego popupu w Dostosuj ten przestaje się otwierać z belki,
- * - warunki: wszędzie oprócz checkoutu (tam belki nie ma),
- * - "Persistent close" wyłączone (domyślnie w Woodmarcie włączone: po pierwszym zamknięciu popup już by się
- *   nie otworzył, a link w belce przestałby działać), wyzwalacz "po czasie" wyłączony (domyślnie włączony z 0 s,
- *   czyli popup otwierałby się sam przy każdym wejściu),
- * - wymaga poprawki rejestracji typu wd_popup z motywu potomnego (inc/woodmart-popups.php), inaczej przy
- *   Elementorze 4.3 Woodmart pomija ustawienia popupu z Elementora,
- * - najbliższy termin: [ship_today_notice] z wtyczki WooCommerce Ship Today Notice (liczony w przeglądarce, działa na
- *   stronach z cache, po godzinie granicznej sam przeskakuje na kolejny).
+ * The popup is saved via the Elementor documents API (no SQL), so the client can later edit it normally
+ * in Elementor: Popups menu. The script also sets it as the bar popup (Appearance → Customize → "Belka o wysyłce").
+ * Settings:
+ * - no stored trigger: the plugin attaches the bar click on the fly (Shipping_Bar::popup_trigger), so once
+ *   another popup is chosen in Customize, this one stops opening from the bar,
+ * - conditions: everywhere except checkout (the bar is not shown there),
+ * - "Persistent close" disabled (enabled by default in Woodmart: after the first close the popup would never
+ *   open again and the bar link would stop working), "after time" trigger disabled (enabled by default with 0 s,
+ *   i.e. the popup would open by itself on every visit),
+ * - requires the wd_popup type registration fix from the child theme (inc/woodmart-popups.php), otherwise with
+ *   Elementor 4.3 Woodmart ignores the popup settings from Elementor,
+ * - nearest date: [ship_today_notice] from the WooCommerce Ship Today Notice plugin (computed in the browser, works on
+ *   cached pages, rolls over to the next slot by itself after the cutoff).
  *
- * Ponowne uruchomienie nadpisuje treść i ustawienia popupu oznaczonego meta _tzp_popup = shipping-why.
+ * Re-running overwrites the content and settings of the popup marked with meta _tzp_popup = shipping-why.
  *
  * @package tezapiekanki
  */
@@ -95,7 +95,7 @@ $elements = array(
 				'widgetType' => 'wd_title',
 				'settings'   => array(
 					'title'                             => 'Dlaczego wysyłamy tylko 2 razy w tygodniu?',
-					// Bez tych pustych wartości widget wstawia przykładowe "Subtitle text example" i "Text after title text example".
+					// Without these empty values the widget inserts the sample "Subtitle text example" and "Text after title text example".
 					'subtitle'                          => '',
 					'after_title'                       => '',
 					'tag'                               => 'h3',
@@ -205,7 +205,7 @@ $existing = get_posts(
 
 $documents = \Elementor\Plugin::$instance->documents;
 
-// W WP-CLI Elementor rejestruje typy dokumentów, zanim Woodmart podepnie się pod elementor/documents/register (init 10).
+// In WP-CLI Elementor registers document types before Woodmart hooks into elementor/documents/register (init 10).
 if ( ! $documents->get_document_type( 'wd_popup', false ) && class_exists( '\XTS\Modules\Floating_Blocks\Integrations\Popup_Document' ) ) {
 	$documents->register_document_type( 'wd_popup', \XTS\Modules\Floating_Blocks\Integrations\Popup_Document::class );
 }
@@ -243,10 +243,10 @@ wp_update_post(
 	)
 );
 
-// Woodmart trzyma warunki popupów w transiencie i czyści go tylko przy zapisie w panelu.
+// Woodmart keeps popup conditions in a transient and clears it only when saving in the admin.
 delete_transient( 'wd_all_popup_conditions' );
 
-// Popup belki (to samo co wybór w Wygląd → Dostosuj → "Belka o wysyłce").
+// Bar popup (same as choosing it in Appearance → Customize → "Belka o wysyłce").
 $bar_option             = get_option( 'tzp_shipping_bar', array() );
 $bar_option             = is_array( $bar_option ) ? $bar_option : array();
 $bar_option['action']   = 'popup';

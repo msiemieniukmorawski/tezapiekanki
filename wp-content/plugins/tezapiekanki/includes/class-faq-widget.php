@@ -1,6 +1,6 @@
 <?php
 /**
- * Widget Elementora "FAQ (zwiń / rozwiń)", kategoria "TeZapiekanki". Renderuje Faq::render() (class-faq.php).
+ * Elementor widget "FAQ (zwiń / rozwiń)", category "TeZapiekanki". Renders Faq::render() (class-faq.php).
  *
  * @package tezapiekanki
  */
@@ -41,8 +41,8 @@ class Faq_Widget extends Widget_Base {
 	}
 
 	/**
-	 * Zawsze renderowany na żywo (bez cache elementów Elementora): pytania muszą trafić do schemy FAQPage,
-	 * którą wypisujemy na końcu strony.
+	 * Always rendered live (no Elementor element cache): the questions must reach the FAQPage schema,
+	 * which we print at the end of the page.
 	 */
 	protected function is_dynamic_content(): bool {
 		return true;
@@ -326,7 +326,7 @@ class Faq_Widget extends Widget_Base {
 			);
 		}
 
-		echo Faq::render( // phpcs:ignore WordPress.Security.EscapeOutput -- Faq::render escapuje pytania, odpowiedzi przez wp_kses_post.
+		echo Faq::render( // phpcs:ignore WordPress.Security.EscapeOutput -- Faq::render escapes questions, answers via wp_kses_post.
 			$items,
 			array(
 				'open_first' => 'yes' === $settings['open_first'],

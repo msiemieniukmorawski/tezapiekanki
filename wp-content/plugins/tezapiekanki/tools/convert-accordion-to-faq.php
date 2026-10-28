@@ -1,16 +1,16 @@
 <?php
 /**
- * Zamienia akordeon Woodmarta (wd_accordion) na stronie Elementora na widget "FAQ (zwiń / rozwiń)" (tzp_faq)
- * z tymi samymi pytaniami i odpowiedziami. Szerokość i wyrównanie widgetu zostają.
+ * Replaces a Woodmart accordion (wd_accordion) on an Elementor page with the "FAQ (zwiń / rozwiń)" widget (tzp_faq)
+ * using the same questions and answers. Widget width and alignment are kept.
  *
- * Uruchomienie (WP-CLI, jako administrator):
+ * Usage (WP-CLI, as administrator):
  *   wp eval-file wp-content/plugins/tezapiekanki/tools/convert-accordion-to-faq.php <ID strony> [ID widgetu] [noschema] --user=<admin>
  *
- * Bez ID widgetu zamienia wszystkie akordeony Woodmarta na stronie. "noschema" wyłącza dane strukturalne FAQPage
- * w nowych widgetach (gdy te same pytania są oznaczone gdzie indziej, np. na stronie FAQ).
- * Przed zapisem kopia _elementor_data trafia do wp-content/uploads/tzp-backup/.
+ * Without a widget ID, converts every Woodmart accordion on the page. "noschema" disables FAQPage structured data
+ * in the new widgets (when the same questions are marked up elsewhere, e.g. on the FAQ page).
+ * Before saving, a copy of _elementor_data goes to wp-content/uploads/tzp-backup/.
  *
- * Lokalnie 19.10: strona główna (11), widget 2e3bb3e (5 pytań, pierwsze otwarte, schema włączona).
+ * Locally 2026-10-19: front page (11), widget 2e3bb3e (5 questions, first open, schema enabled).
  *
  * @package tezapiekanki
  */
@@ -55,7 +55,7 @@ $tzp_walk = static function ( array &$els ) use ( &$tzp_walk, &$tzp_done, $tzp_w
 
 			$settings = array(
 				'items'      => $items,
-				// Woodmart: data-state "first" (domyślnie) = pierwsze otwarte, "all_closed" = wszystkie zamknięte.
+				// Woodmart: data-state "first" (default) = first item open, "all_closed" = all closed.
 				'open_first' => 'all_closed' === ( $old['state'] ?? 'first' ) ? '' : 'yes',
 				'exclusive'  => '',
 				'schema'     => $tzp_schema ? 'yes' : '',

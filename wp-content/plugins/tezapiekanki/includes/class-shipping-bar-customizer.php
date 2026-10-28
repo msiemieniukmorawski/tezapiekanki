@@ -1,9 +1,9 @@
 <?php
 /**
- * Ustawienia belki o wysyłce w Wygląd → Dostosuj → "Belka o wysyłce" (opcja tzp_shipping_bar, niezależna od motywu).
+ * Shipping bar settings in Appearance → Customize → "Belka o wysyłce" (option tzp_shipping_bar, theme-independent).
  *
- * Teksty zmieniają się w podglądzie na żywo, reszta po odświeżeniu podglądu. Po zapisie ustawień belki i po zapisie
- * wybranego popupu w Elementorze czyścimy cache LiteSpeed (na produkcji strony są trzymane 7 dni).
+ * Texts update live in the preview, the rest after the preview refreshes. After saving the bar settings and after saving
+ * the selected popup in Elementor we purge the LiteSpeed cache (in production pages are cached for 7 days).
  *
  * @package tezapiekanki
  */

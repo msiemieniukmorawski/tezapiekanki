@@ -1,20 +1,20 @@
 <?php
 /**
- * Karta zapiekanki (layout Woodmarta 6480): wartość odżywcza z kartą PDF i piny smaków.
+ * Zapiekanka product page (Woodmart layout 6480): nutrition values with the PDF card and flavour pins.
  *
- * Uruchomienie (WP-CLI, jako administrator):
+ * Usage (WP-CLI, as administrator):
  *   wp eval-file wp-content/plugins/tezapiekanki/tools/update-product-layout.php --user=<login>
- *   (opcjonalnie ID layoutu jako pierwszy argument, domyślnie 6480)
+ *   (optionally the layout ID as the first argument, default 6480)
  *
- * Co robi (przez API Elementora, nie SQL-em):
- * 1. Kontener z tabelą atrybutów Woodmarta (widgety: tekst "Wartości odżywcze na 100g", "Pobierz kartę produktu"
- *    i tabela) dostaje zamiast nich jeden widget Shortcode [tzp_nutrition]. Ustawienia kontenera (odstępy) zostają.
- * 2. Ten kontener przechodzi wyżej: zaraz pod blok "Info praktyczne" (shortcode [html_block …]), a gdy go nie ma,
- *    pod kontener z przyciskiem "Dodaj do koszyka". Logotypy płatności i licznik odwiedzin są pod nim.
- * 3. Pod formularzem zakupu (kontener z ceną i "Dodaj do koszyka") nowy kontener z widgetem Shortcode
- *    [tzp_flavor_pins]. Gdy piny są w innym miejscu (do 20.10 były pod tytułem), przenosi je.
- * Kroki, które już są w layoucie, pomija. Widgety mają wyłączony cache elementu (treść zależy od produktu).
- * Przed zapisem kopia _elementor_data trafia do wp-content/uploads/tzp-backup/.
+ * What it does (via the Elementor API, no SQL):
+ * 1. The container with the Woodmart attribute table (widgets: text "Wartości odżywcze na 100g", "Pobierz kartę produktu"
+ *    and the table) gets a single Shortcode widget [tzp_nutrition] instead. Container settings (spacing) are kept.
+ * 2. That container moves up: right below the "Info praktyczne" block (shortcode [html_block …]), or if it is missing,
+ *    below the container with the "Dodaj do koszyka" button. Payment logos and the visitor counter stay below it.
+ * 3. Below the purchase form (container with price and "Dodaj do koszyka") a new container with a Shortcode widget
+ *    [tzp_flavor_pins]. If the pins are elsewhere (until 2026-10-20 they were below the title), moves them.
+ * Steps already present in the layout are skipped. Widgets have element cache disabled (content depends on the product).
+ * Before saving, a copy of _elementor_data goes to wp-content/uploads/tzp-backup/.
  *
  * @package tezapiekanki
  */
@@ -47,7 +47,7 @@ $tzp_shortcode_widget = static function ( $shortcode, $css_class ) use ( $tzp_id
 		'widgetType' => 'shortcode',
 		'settings'   => array(
 			'shortcode'      => $shortcode,
-			// "yes" = renderowany przy każdym wyświetleniu (bez cache elementów Elementora), bo treść zależy od produktu.
+			// "yes" = rendered on every view (no Elementor element cache), because the content depends on the product.
 			'_element_cache' => 'yes',
 			'_css_classes'   => $css_class,
 		),
@@ -83,7 +83,7 @@ $elements = $tzp_document->get_elements_data();
 $changes  = array();
 
 /*
- * 1 i 2. Wartość odżywcza.
+ * 1 and 2. Nutrition values.
  */
 if ( $tzp_has( $elements, $tzp_is_shortcode( '/\[tzp_nutrition\b/' ) ) ) {
 	WP_CLI::log( '[tzp_nutrition] już jest, pomijam.' );
@@ -96,7 +96,7 @@ if ( $tzp_has( $elements, $tzp_is_shortcode( '/\[tzp_nutrition\b/' ) ) ) {
 
 			$is_table_box = $tzp_has( array( $el ), $tzp_is_widget( 'wd_single_product_additional_info_table' ) );
 
-			// Kontener z tabelą jest bezpośrednim dzieckiem tego poziomu: zamiana treści i przeniesienie wśród rodzeństwa.
+			// The table container is a direct child at this level: replace its content and move it among its siblings.
 			if ( $is_table_box && ! $tzp_has( $el['elements'], $tzp_is_widget( 'wd_single_product_add_to_cart' ) ) ) {
 				$box             = $el;
 				$box['elements'] = array( $tzp_shortcode_widget( '[tzp_nutrition]', 'tzp-nutrition-widget' ) );
@@ -142,13 +142,13 @@ if ( $tzp_has( $elements, $tzp_is_shortcode( '/\[tzp_nutrition\b/' ) ) ) {
 }
 
 /*
- * 3. Piny smaków pod formularzem zakupu: osobny kontener zaraz pod kontenerem z ceną i "Dodaj do koszyka", z jego
- *    odstępami (decyzja Marcina z 20.10; wcześniej piny były pod tytułem). Piny z innego miejsca są przenoszone.
+ * 3. Flavour pins below the purchase form: a separate container right below the container with price and "Dodaj do koszyka",
+ *    with its spacing (decided 2026-10-20; previously the pins were below the title). Pins found elsewhere are moved.
  */
 $tzp_is_pins = $tzp_is_shortcode( '/\[tzp_flavor_pins\b/' );
 $tzp_is_atc  = $tzp_is_widget( 'wd_single_product_add_to_cart' );
 
-// 'yes' = piny są już w kontenerze tuż pod kontenerem z przyciskiem, 'no' = nie, false = brak przycisku.
+// 'yes' = pins are already in the container right below the button container, 'no' = they are not, false = no button.
 $pins_placed = static function ( $els ) use ( &$pins_placed, $tzp_has, $tzp_is_pins, $tzp_is_atc ) {
 	foreach ( array_values( $els ) as $i => $el ) {
 		$kids = $el['elements'] ?? array();
@@ -175,7 +175,7 @@ if ( 'yes' === $placed ) {
 } elseif ( false === $placed ) {
 	WP_CLI::warning( 'Brak widgetu "Dodaj do koszyka", piny nie wstawione.' );
 } else {
-	// Usunięcie pinów z dotychczasowego miejsca (widget zostaje ten sam) i pustych kontenerów po nich.
+	// Remove the pins from their current place (the widget itself is reused) and any containers left empty.
 	$pins_widget = null;
 	$pins_remove = static function ( array &$els ) use ( &$pins_remove, &$pins_widget, $tzp_is_pins ) {
 		foreach ( array_keys( $els ) as $i ) {
@@ -246,7 +246,7 @@ wp_mkdir_p( $tzp_dir );
 $tzp_backup = $tzp_dir . '/elementor-data-' . $tzp_layout_id . '-' . gmdate( 'Ymd-His' ) . '.json';
 file_put_contents( $tzp_backup, get_post_meta( $tzp_layout_id, '_elementor_data', true ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 
-// Elementor przy zapisie renderuje widgety do tekstu, a widgety karty produktu wymagają globalnego $product.
+// On save Elementor renders widgets to plain text, and product page widgets require the global $product.
 $tzp_ids = wc_get_products(
 	array(
 		'category' => array( 'zapiekanki' ),

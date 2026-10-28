@@ -1,15 +1,15 @@
 <?php
 /**
- * Maile i adresy w zamówieniu: poprawki wyglądu.
+ * Emails and order addresses: display fixes.
  *
- * 1. Adres kontaktowy w mailach do klientów. Stopka maili ("skontaktuj się z nami pod adresem {store_email}") pokazuje
- *    adres nadawcy, a nadawcą jest noreply@… (adres ze skrzynki SMTP, nie do zmiany bez ryzyka dla doręczalności).
- *    Gdy w WooCommerce → Ustawienia → E-maile jest włączony "Adres odpowiedzi" (Reply-to), w treści maili do klientów
- *    zamiast adresu nadawcy pokazujemy adres odpowiedzi. Maile do sklepu (nowe, anulowane, nieudane zamówienie)
- *    zostają bez zmian, tam WooCommerce ustawia odpowiedź na adres klienta.
- * 2. Puste pola Flexible Checkout Fields w adresie. FCF dopisuje do adresu "Nazwa firmy: " i "Numer NIP: " także wtedy,
- *    gdy klient ich nie wypełnił (bez faktury). Takie linie czyścimy, a WooCommerce usuwa puste linie z adresu.
- *    Dotyczy maili, strony podziękowania, Moje konto i panelu zamówienia.
+ * 1. Contact address in customer emails. The email footer ("skontaktuj się z nami pod adresem {store_email}") shows
+ *    the sender address, and the sender is noreply@… (the SMTP mailbox address, can't be changed without risking deliverability).
+ *    When "Reply-to address" is enabled in WooCommerce → Settings → Emails, customer emails show the reply-to
+ *    address instead of the sender address. Emails to the shop (new, cancelled, failed order)
+ *    stay unchanged; there WooCommerce sets the reply-to to the customer's address.
+ * 2. Empty Flexible Checkout Fields in the address. FCF appends "Nazwa firmy: " and "Numer NIP: " to the address even
+ *    when the customer left them empty (no invoice). We clear such lines, and WooCommerce removes empty lines from the address.
+ *    Applies to emails, the thank-you page, My Account and the order admin screen.
  *
  * @package tezapiekanki
  */
@@ -20,19 +20,19 @@ defined( 'ABSPATH' ) || exit;
 
 class Emails {
 
-	// Maile do sklepu: odpowiedź idzie do klienta (WooCommerce), adresu nie podmieniamy.
+	// Emails to the shop: replies go to the customer (WooCommerce), we don't replace the address.
 	const ADMIN_EMAILS = array( 'new_order', 'cancelled_order', 'failed_order' );
 
 	public static function init() {
 		add_filter( 'woocommerce_email_format_string', array( __CLASS__, 'contact_address' ), 10, 2 );
-		// Po FCF (priorytet 999999).
+		// After FCF (priority 999999).
 		add_filter( 'woocommerce_order_formatted_billing_address', array( __CLASS__, 'drop_empty_labels' ), PHP_INT_MAX );
 		add_filter( 'woocommerce_order_formatted_shipping_address', array( __CLASS__, 'drop_empty_labels' ), PHP_INT_MAX );
 	}
 
 	/**
-	 * @param string    $text  Tekst maila po podstawieniu znaczników.
-	 * @param \WC_Email $email Mail.
+	 * @param string    $text  Email text after placeholder substitution.
+	 * @param \WC_Email $email Email.
 	 * @return string
 	 */
 	public static function contact_address( $text, $email ) {
@@ -55,7 +55,7 @@ class Emails {
 	}
 
 	/**
-	 * @param array|mixed $fields Pola adresu (po FCF).
+	 * @param array|mixed $fields Address fields (after FCF).
 	 * @return array|mixed
 	 */
 	public static function drop_empty_labels( $fields ) {
@@ -77,7 +77,7 @@ class Emails {
 	}
 
 	/**
-	 * Własne pola FCF (adres rozliczeniowy i wysyłki): nazwa pola => etykieta.
+	 * Custom FCF fields (billing and shipping address): field name => label.
 	 *
 	 * @return array
 	 */

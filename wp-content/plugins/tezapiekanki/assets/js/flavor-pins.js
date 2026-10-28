@@ -1,7 +1,7 @@
 /**
- * Piny smaków ([tzp_flavor_pins], includes/class-flavor-pins.php).
- * Na telefonie lista jest jednym przewijanym wierszem: przewijamy ją tak, żeby bieżący smak był na środku,
- * i zaznaczamy klasami, z której strony jest jeszcze coś do przewinięcia (cieniowanie krawędzi w CSS).
+ * Flavor pins ([tzp_flavor_pins], includes/class-flavor-pins.php).
+ * On phones the list is a single scrollable row: we scroll it so the current flavor is centered,
+ * and mark with classes on which side there is more to scroll (edge shading in CSS).
  */
 (function () {
 	'use strict';

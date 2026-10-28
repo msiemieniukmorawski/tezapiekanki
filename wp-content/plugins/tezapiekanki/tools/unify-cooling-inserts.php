@@ -1,14 +1,14 @@
 <?php
 /**
- * Ujednolicenie nazwy wkładów w opisach produktów: "wkłady żelowe" → "wkłady chłodzące" (tak mówią strona główna,
- * "Sposoby dostawy", popup i blok "Info praktyczne").
+ * Unifies the name of the inserts in product descriptions: "wkłady żelowe" → "wkłady chłodzące" (the wording used on the
+ * front page, "Sposoby dostawy", the popup and the "Info praktyczne" block).
  *
- * Uruchomienie (WP-CLI):
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/unify-cooling-inserts.php           (podgląd, nic nie zapisuje)
- *   wp eval-file wp-content/plugins/tezapiekanki/tools/unify-cooling-inserts.php apply     (zapis)
+ * Usage (WP-CLI):
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/unify-cooling-inserts.php           (preview, saves nothing)
+ *   wp eval-file wp-content/plugins/tezapiekanki/tools/unify-cooling-inserts.php apply     (save)
  *
- * Zmienia opis i krótki opis wszystkich produktów (także ukrytych kopii do zestawów) przez API WooCommerce.
- * Odmiana: żelowe/żelowych/żelowymi/żelowym/żelowy/żelowa/żelową → chłodzące/chłodzących/…, wielka litera zostaje.
+ * Changes the description and short description of all products (including hidden bundle copies) via the WooCommerce API.
+ * Inflection: żelowe/żelowych/żelowymi/żelowym/żelowy/żelowa/żelową → chłodzące/chłodzących/…, capitalisation is kept.
  *
  * @package tezapiekanki
  */
@@ -17,7 +17,7 @@ defined( 'WP_CLI' ) || exit;
 
 $tzp_apply = in_array( 'apply', (array) ( $args ?? array() ), true );
 
-// Końcówki przymiotnika są takie same: żelow-ymi → chłodząc-ymi, żelow-e → chłodząc-e itd.
+// The adjective endings are identical: żelow-ymi → chłodząc-ymi, żelow-e → chłodząc-e, etc.
 $tzp_replace = static function ( $text, &$count ) {
 	return preg_replace_callback(
 		'/(ż|Ż)elow(ymi|ych|ym|e|y|a|ą)(?!\p{L})/u',

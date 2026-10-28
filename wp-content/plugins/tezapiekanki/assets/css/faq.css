@@ -1,7 +1,7 @@
 /* =========================================================
-   FAQ: pytania rozwijane (includes/class-faq.php, widget "FAQ (zwiń / rozwiń)")
-   Domyślnie wygląd FAQ ze strony głównej: białe karty, otwarte pytanie w kolorze marki, strzałka po prawej.
-   Zmienne ustawia widget w Elementorze (zakładka Styl).
+   FAQ: collapsible questions (includes/class-faq.php, widget "FAQ (zwiń / rozwiń)")
+   Default look of the home page FAQ: white cards, open question in the brand color, arrow on the right.
+   The variables are set by the Elementor widget (Style tab).
    ========================================================= */
 
 .tzp-faq {
@@ -20,7 +20,7 @@
 
 	display: grid;
 	gap: var(--tzp-faq-gap);
-	/* Płynne rozwijanie do wysokości "auto" (Chrome 129+; inne przeglądarki otwierają bez animacji). */
+	/* Smooth expanding to "auto" height (Chrome 129+; other browsers open without animation). */
 	interpolate-size: allow-keywords;
 }
 
@@ -62,7 +62,7 @@
 	border-radius: var(--tzp-faq-radius);
 }
 
-/* Pytanie bywa nagłówkiem (H2-H4), więc zerujemy style nagłówków motywu. */
+/* The question can be a heading (H2-H4), so reset the theme's heading styles. */
 .tzp-faq .tzp-faq__title {
 	flex: 1 1 auto;
 	margin: 0;
@@ -114,12 +114,12 @@
 	block-size: auto;
 }
 
-/* Karta produktu: opis ma białe tło, więc białe karty pytań dostają obramowanie (jak na stronie FAQ). */
+/* Product page: the description has a white background, so the white question cards get a border (as on the FAQ page). */
 .single-product .tzp-faq {
 	--tzp-faq-border: #e8e8e8;
 }
 
-/* Link pod pytaniami ("Zobacz wszystkie pytania"): obramowany przycisk jak "Napisz do nas" na stronie głównej. */
+/* Link below the questions ("Zobacz wszystkie pytania"): outlined button like "Napisz do nas" on the home page. */
 .tzp-faq-more {
 	margin: 20px 0 0;
 }

@@ -1,11 +1,11 @@
 <?php
 /**
- * Zestawy (WPC Product Bundles): poprawki komunikatów.
+ * Bundles (WPC Product Bundles): message fixes.
  *
- * Komunikat przy próbie dodania pustego zestawu (WPC Bundles → Localization → "alert_empty") ma w ustawieniach tekst
- * "Wybierz [min] zapiekanek przed dodaniem zestawu do koszyka.", ale wtyczka podmienia [min] tylko w innych
- * komunikatach, więc klient widział dosłownie "[min]". Na karcie zestawu podstawiamy minimalną liczbę sztuk z jego
- * ustawień (woosb_limit_whole_min: 9 albo 12).
+ * The message shown when adding an empty bundle (WPC Bundles → Localization → "alert_empty") is set to
+ * "Wybierz [min] zapiekanek przed dodaniem zestawu do koszyka.", but the plugin replaces [min] only in other
+ * messages, so customers saw a literal "[min]". On the bundle page we substitute the minimum quantity from its
+ * settings (woosb_limit_whole_min: 9 or 12).
  *
  * @package tezapiekanki
  */
@@ -21,7 +21,7 @@ class Bundles {
 	}
 
 	/**
-	 * @param string $text Tekst komunikatu z ustawień wtyczki.
+	 * @param string $text Message text from the plugin settings.
 	 * @return string
 	 */
 	public static function alert_empty( $text ) {

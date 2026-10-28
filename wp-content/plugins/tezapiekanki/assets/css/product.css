@@ -1,6 +1,6 @@
 /* =========================================================
-   Karta produktu: wartość odżywcza z kartą PDF ([tzp_nutrition], [tzp_product_card], includes/class-product-card.php)
-   i piny smaków ([tzp_flavor_pins], includes/class-flavor-pins.php). Layout Woodmarta 6480.
+   Product page: nutrition facts with the PDF sheet ([tzp_nutrition], [tzp_product_card], includes/class-product-card.php)
+   and flavor pins ([tzp_flavor_pins], includes/class-flavor-pins.php). Woodmart layout 6480.
    ========================================================= */
 
 .tzp-nutrition,
@@ -11,7 +11,7 @@
 	--tzp-muted: #666;
 }
 
-/* Wartość odżywcza */
+/* Nutrition facts */
 
 .tzp-nutrition {
 	padding: 20px;
@@ -85,7 +85,7 @@
 	border-bottom: 0;
 }
 
-/* "w tym kwasy tłuszczowe nasycone", "w tym cukry": wcięte i jaśniejsze, jak na etykiecie. */
+/* "w tym kwasy tłuszczowe nasycone", "w tym cukry": indented and lighter, as on a food label. */
 .tzp-nutrition .tzp-nutrition__table .tzp-nutrition__sub th {
 	padding-left: 14px;
 	color: var(--tzp-muted);
@@ -120,7 +120,7 @@
 	font-size: 14px;
 }
 
-/* Przycisk karty produktu (PDF) */
+/* Product data sheet button (PDF) */
 
 a.tzp-card-link {
 	display: inline-flex;
@@ -177,7 +177,7 @@ a.tzp-card-link:focus-visible {
 	}
 }
 
-/* Piny smaków */
+/* Flavor pins */
 
 .tzp-flavors {
 	display: flex;
@@ -256,8 +256,8 @@ a.tzp-flavors__pin.is-out {
 	color: #999;
 }
 
-/* Telefon: etykieta nad jednym przewijanym wierszem pinów, od krawędzi do krawędzi ekranu (kontener ma 15 px
-   paddingu). Cieniowanie krawędzi tylko tam, gdzie jest coś do przewinięcia (klasy z js/flavor-pins.js). */
+/* Phone: label above a single scrollable row of pins, edge to edge of the screen (the container has 15 px
+   padding). Edge shading only where there is more to scroll (classes from js/flavor-pins.js). */
 @media (max-width: 767px) {
 	.tzp-flavors {
 		display: block;

@@ -1,6 +1,6 @@
 <?php
 /**
- * Funkcje pomocnicze wtyczki.
+ * Plugin helper functions.
  *
  * @package tezapiekanki
  */
@@ -10,9 +10,9 @@ namespace TZP;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Wersja pliku z wtyczki = data jego zmiany, żeby po aktualizacji przeglądarki i LiteSpeed nie trzymały starej wersji.
+ * Plugin file version = its modification time, so browsers and LiteSpeed don't keep the old version after an update.
  *
- * @param string $file Ścieżka względem katalogu wtyczki, np. "assets/css/faq.css".
+ * @param string $file Path relative to the plugin directory, e.g. "assets/css/faq.css".
  * @return string
  */
 function asset_version( $file ) {
