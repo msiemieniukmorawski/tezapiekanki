@@ -1,0 +1,7 @@
+# Pliki trzymamy w LF, tak jak na serwerze (bez zamiany na CRLF przy core.autocrlf).
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.pdf binary
+*.mo  binary

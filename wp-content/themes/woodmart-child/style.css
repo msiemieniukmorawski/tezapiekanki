@@ -1,0 +1,653 @@
+/*
+ Theme Name:   Woodmart Child - TeZapiekanki
+ Description:  Motyw potomny Woodmart dla tezapiekanki.pl. Własny kod sklepu, który nie może zniknąć przy aktualizacji Woodmarta.
+ Author:       MS-M.pl
+ Author URI:   https://ms-m.pl
+ Template:     woodmart
+ Version:      1.1.0
+ Text Domain:  tezapiekanki
+*/
+
+/* =========================================================
+   Termin dostawy na karcie produktu
+   Shortcode [ship_today_notice class="tzp-delivery-box"] pod krótkim opisem (layouty 6480 i 6533).
+   ========================================================= */
+
+.wc-ship-today-notice.tzp-delivery-box {
+	display: block !important;
+	position: relative;
+	margin: 20px 0;
+	padding: 16px 18px 16px 64px;
+	border: 0;
+	border-radius: 8px;
+	background: #f7efeb;
+	color: #222;
+	font-size: 17px;
+	font-weight: 400;
+	line-height: 1.4;
+}
+
+/* Ikona samochodu dostawczego. */
+.wc-ship-today-notice.tzp-delivery-box::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 18px;
+	width: 32px;
+	height: 32px;
+	transform: translateY(-50%);
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238c3215' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h11v10H3z'/%3E%3Cpath d='M14 9h4l3 3v4h-7'/%3E%3Ccircle cx='7' cy='17.5' r='1.8'/%3E%3Ccircle cx='17' cy='17.5' r='1.8'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.wc-ship-today-notice.tzp-delivery-box strong {
+	font-weight: 700;
+}
+
+.wc-ship-today-notice.tzp-delivery-box .tzp-countdown-line {
+	display: block;
+	margin-top: 4px;
+	font-size: 0.88em;
+	color: #555;
+}
+
+.wc-ship-today-notice.tzp-delivery-box .wc-ship-today-countdown {
+	display: inline;
+	font-weight: 700;
+	color: rgb(140, 50, 21);
+}
+
+/* =========================================================
+   Info praktyczne pod "Dodaj do koszyka"
+   HTML Block 31279 (kontener z klasą tzp-info, 4 widgety wd_infobox), layouty 6480 i 6533.
+   Woodmart daje 20 px między ikoną a tekstem i 10 px nad opisem, tu ciaśniej.
+   ========================================================= */
+
+.tzp-info .wd-info-box {
+	--ib-icon-sp: 12px;
+}
+
+.tzp-info .wd-info-box .info-box-inner:not(:first-child) {
+	margin-top: 1px;
+}
+
+.tzp-info .wd-info-box .info-box-inner p {
+	margin-bottom: 0;
+}
+
+/* =========================================================
+   Galeria produktu (layouty 6480 i 6533, widget galerii z klasą tzp-gallery, inc/product-gallery.php)
+   Desktop i tablet: duże pierwsze zdjęcie ("Bottom grid" Woodmarta), pod nim kafelki 4:3 po 2 w rzędzie.
+   Przy więcej niż 6 zdjęciach widać duże + 4 kafelki, a przycisk "Zobacz więcej zdjęć" pod siatką
+   rozwija resztę w dół (i zwija z powrotem). Kliknięcie zdjęcia otwiera lightbox. Telefon: karuzela
+   Woodmarta z wystającym kolejnym zdjęciem i licznikiem "1 / 8" (js/product-gallery.js).
+   ========================================================= */
+
+.tzp-gallery .woocommerce-product-gallery__image > a {
+	position: relative;
+	display: block;
+	cursor: zoom-in;
+}
+
+.tzp-gallery__toggle {
+	display: none;
+}
+
+@media (min-width: 769px) {
+	/* Kafelki w jednej proporcji: zdjęcia 3:2 tracą po 5,5% z boków, kwadratowe po 12,5% z góry i dołu.
+	   Duże zdjęcie zostaje w swojej proporcji (zwykle kwadrat). */
+	.tzp-gallery .wd-carousel-wrap > .wd-carousel-item:not(:first-child) .woocommerce-product-gallery__image img {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 4 / 3;
+		object-fit: cover;
+	}
+
+	/* Zestawy (WPC Bundles): zdjęcia są pionowe 2:3, duże miałoby 930 px wysokości (tablet 1230 px).
+	   Przycinamy je do kwadratu jak u zapiekanek; w lightboxie zostaje całe. */
+	.product-type-woosb .tzp-gallery .wd-carousel-wrap > .wd-carousel-item:first-child .woocommerce-product-gallery__image img {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 1 / 1;
+		object-fit: cover;
+	}
+
+	/* Więcej niż 6 zdjęć: zostaje duże + 4 kafelki. Od razu w CSS (:has), żeby strona nie skakała
+	   po załadowaniu skryptu. Klasę --expanded dodaje przycisk pod siatką. */
+	.tzp-gallery .woocommerce-product-gallery:not(.tzp-gallery--expanded):has(.wd-carousel-item:nth-child(7)) .wd-carousel-wrap > .wd-carousel-item:nth-child(n+6) {
+		display: none;
+	}
+
+	/* Odsłonięte kafelki pojawiają się łagodnie, wysokość siatki animuje skrypt. */
+	.tzp-gallery .tzp-gallery--expanded .wd-carousel-wrap > .wd-carousel-item:nth-child(n+6) {
+		animation: tzp-gallery-in 0.35s ease both;
+	}
+
+	.tzp-gallery .tzp-gallery__toggle {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 10px;
+		width: 100%;
+		min-height: 46px;
+		margin: 15px 0 0;
+		padding: 0 20px;
+		border: 1px solid #e6e6e6;
+		border-radius: 8px;
+		background: #fff;
+		box-shadow: none;
+		color: #222;
+		font-size: 14px;
+		font-weight: 600;
+		text-transform: none;
+		cursor: pointer;
+		transition: border-color 0.2s ease, color 0.2s ease;
+	}
+
+	.tzp-gallery .tzp-gallery__toggle:hover,
+	.tzp-gallery .tzp-gallery__toggle:focus-visible {
+		border-color: rgb(140, 50, 21);
+		background: #fff;
+		color: rgb(140, 50, 21);
+	}
+
+	/* Strzałka w dół, po rozwinięciu w górę. */
+	.tzp-gallery__toggle-icon {
+		width: 8px;
+		height: 8px;
+		margin-top: -4px;
+		border-right: 2px solid currentColor;
+		border-bottom: 2px solid currentColor;
+		transform: rotate(45deg);
+		transition: transform 0.25s ease, margin 0.25s ease;
+	}
+
+	.tzp-gallery__toggle[aria-expanded="true"] .tzp-gallery__toggle-icon {
+		margin-top: 4px;
+		transform: rotate(-135deg);
+	}
+}
+
+@keyframes tzp-gallery-in {
+	from {
+		opacity: 0;
+		transform: translateY(-8px);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tzp-gallery .tzp-gallery--expanded .wd-carousel-wrap > .wd-carousel-item:nth-child(n+6) {
+		animation: none;
+	}
+}
+
+@media (max-width: 768px) {
+	/* Wystające kolejne zdjęcie: Woodmart bierze liczbę slajdów z --wd-col-sm (w atrybucie style jest 1). */
+	.tzp-gallery .woocommerce-product-gallery__wrapper {
+		--wd-col-sm: 1.15 !important;
+	}
+
+	.tzp-gallery .woocommerce-product-gallery__image img {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 4 / 3;
+		object-fit: cover;
+	}
+
+	.tzp-gallery__counter {
+		position: absolute;
+		left: 12px;
+		bottom: 12px;
+		z-index: 2;
+		padding: 4px 10px;
+		border-radius: 20px;
+		background: rgba(0, 0, 0, 0.6);
+		color: #fff;
+		font-size: 13px;
+		font-weight: 500;
+		line-height: 1.3;
+		pointer-events: none;
+	}
+}
+
+/* =========================================================
+   Koszyk (layout 6460)
+   Desktop: lewa kolumna .tzp-cart-left = lista produktów + "Dobierz do zamówienia",
+   prawa .tzp-cart-right = termin dostawy + wartość koszyka.
+   Tablet i telefon: lista produktów, potem termin i wartość koszyka, na końcu "Dobierz do zamówienia"
+   (.tzp-cart-cross), żeby przycisk przejścia do zamówienia nie był pod polecanymi produktami.
+   ========================================================= */
+
+/* Box z terminem równo z górą lewej kolumny. */
+.tzp-cart-right .wc-ship-today-notice.tzp-delivery-box {
+	margin-top: 0;
+}
+
+@media (max-width: 1024px) {
+	.e-con.tzp-cart-row > .e-con-inner {
+		flex-direction: column;
+	}
+
+	.e-con.tzp-cart-row .tzp-cart-left {
+		display: contents;
+	}
+
+	.e-con.tzp-cart-row .tzp-cart-right {
+		order: 1;
+	}
+
+	.e-con.tzp-cart-row .tzp-cart-cross {
+		order: 2;
+	}
+}
+
+/* =========================================================
+   Checkout (layouty 6467 i 6470, inc/checkout.php, js/checkout.js)
+   Desktop: .tzp-checkout-main (kroki: Kontakt i dane, Dostawa, Płatność) + .tzp-checkout-side (podsumowanie, przyklejone).
+   Tablet i telefon: podsumowanie zwinięte w pasek na górze, pod nim kroki.
+   ========================================================= */
+
+/* CHECKOUT TOP (layout 6467): box z "Powracający klient?" i komunikatami WooCommerce. Zalogowany klient nie widzi
+   formularza logowania (widget nic nie wypisuje), a kupon jest w podsumowaniu, więc bez komunikatów box byłby pusty.
+   :has() działa też po dopisaniu komunikatu przez JS. */
+.e-con.tzp-checkout-top__login:not(:has(*)) {
+	display: none;
+}
+
+.e-con.tzp-checkout-top:not(:has(.tzp-checkout-top__login *)):not(:has(.woocommerce-notices-wrapper *)) {
+	display: none;
+}
+
+.tzp-card {
+	padding: 22px 24px;
+	border: 1px solid #e6e6e6;
+	border-radius: 10px;
+	background: #fff;
+}
+
+/* Nagłówki kroków z numerem. */
+.tzp-checkout-main {
+	counter-reset: tzp-step;
+}
+
+.tzp-step-title .title-wrapper,
+.tzp-summary-title .title-wrapper {
+	text-align: left;
+}
+
+.tzp-step-title .woodmart-title-container::before {
+	content: counter(tzp-step);
+	counter-increment: tzp-step;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	margin-right: 10px;
+	border-radius: 50%;
+	background: rgb(140, 50, 21);
+	color: #fff;
+	font-size: 14px;
+	font-weight: 500;
+	vertical-align: 2px;
+}
+
+/* Podsumowanie przyklejone przy przewijaniu. */
+@media (min-width: 1025px) {
+	.e-con.tzp-checkout-side {
+		position: sticky;
+		top: 30px;
+	}
+}
+
+/* Kraj: sklep wysyła tylko do Polski, pole zostaje w formularzu (wartość PL), ale go nie pokazujemy. */
+.tzp-checkout-main #billing_country_field {
+	display: none !important;
+}
+
+/* Faktura na firmę (js/checkout.js). */
+.tzp-is-hidden {
+	display: none !important;
+}
+
+.tzp-invoice-toggle label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+/* Sekcja "Dostawa": kafelki metod (etykiety oryginalnych pól WooCommerce). */
+.tzp-delivery-methods__tiles {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+}
+
+.tzp-method {
+	display: grid;
+	gap: 3px;
+	margin: 0;
+	padding: 12px 14px;
+	border: 1px solid rgba(0, 0, 0, 0.15);
+	border-radius: 8px;
+	background: #fff;
+	cursor: pointer;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tzp-method:hover {
+	border-color: rgb(140, 50, 21);
+}
+
+.tzp-method.is-checked {
+	border-color: rgb(140, 50, 21);
+	box-shadow: inset 0 0 0 1px rgb(140, 50, 21);
+}
+
+.tzp-method__name {
+	font-weight: 600;
+}
+
+.tzp-method.is-checked .tzp-method__name {
+	color: rgb(140, 50, 21);
+}
+
+.tzp-method__price {
+	font-weight: 700;
+}
+
+.tzp-method__desc {
+	font-size: 0.85em;
+	color: #666;
+}
+
+.tzp-parcel {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px 14px;
+	margin-top: 12px;
+}
+
+.tzp-parcel .tzp-parcel__button {
+	border: 1px solid rgb(140, 50, 21);
+	background: #fff;
+	color: rgb(140, 50, 21);
+}
+
+.tzp-parcel .tzp-parcel__button:hover {
+	background: rgb(140, 50, 21);
+	color: #fff;
+}
+
+/* Wybrany paczkomat (js/checkout.js czyta go z pól wtyczki przewoźnika). */
+.tzp-parcel__selected {
+	display: grid;
+	flex: 1 1 220px;
+	gap: 2px;
+	margin: 0;
+	padding: 10px 14px;
+	border-radius: 8px;
+	background: #f7efeb;
+	font-size: 0.9em;
+	line-height: 1.35;
+}
+
+.tzp-parcel__selected[hidden] {
+	display: none;
+}
+
+.tzp-parcel__label {
+	font-size: 0.85em;
+	color: #666;
+}
+
+.tzp-parcel__label::before {
+	content: "✓ ";
+	color: rgb(140, 50, 21);
+	font-weight: 700;
+}
+
+.tzp-parcel__code {
+	font-size: 1.1em;
+	color: rgb(140, 50, 21);
+}
+
+.tzp-parcel__desc {
+	color: #666;
+}
+
+.tzp-summary-parcel {
+	margin-top: 2px;
+	font-size: 0.85em;
+	color: #666;
+}
+
+/* Box z terminem w wersji kompaktowej nad kafelkami terminu. */
+.wc-ship-today-notice.tzp-delivery-box.tzp-delivery-box--compact {
+	margin: 4px 0 0;
+	padding: 12px 14px 12px 54px;
+	font-size: 15px;
+}
+
+.wc-ship-today-notice.tzp-delivery-box--compact::before {
+	left: 14px;
+	width: 26px;
+	height: 26px;
+}
+
+/* Podsumowanie: oryginalny wybór wysyłki i przycisk Apaczki zostają w formularzu, ale są niewidoczne.
+   Kafelki w sekcji "Dostawa" to etykiety tych pól, a nasz przycisk paczkomatu uruchamia przycisk Apaczki. */
+.tzp-checkout-side #shipping_method input[type="radio"] {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: 0;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.tzp-checkout-side #shipping_method li:not(:has(input:checked)) {
+	display: none;
+}
+
+.tzp-checkout-side #shipping_method .shipping-method-description,
+.tzp-checkout-side tr.apaczka-parcel-machine,
+.tzp-checkout-side tr.easypack-parcel-machine,
+.tzp-checkout-side #shipping_method .easypack_show_geowidget,
+.tzp-checkout-side #shipping_method .easypack_selected_point_data {
+	display: none;
+}
+
+/* Kod rabatowy nad "Łącznie". */
+.tzp-coupon td {
+	padding-top: 12px !important;
+	padding-bottom: 12px !important;
+	text-align: left !important;
+}
+
+.tzp-coupon__box summary {
+	display: inline-block;
+	color: rgb(140, 50, 21);
+	text-decoration: underline;
+	cursor: pointer;
+	list-style: none;
+}
+
+.tzp-coupon__box summary::-webkit-details-marker {
+	display: none;
+}
+
+.tzp-coupon__row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.tzp-coupon__box.is-loading .tzp-coupon__row {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+.tzp-coupon__msg:empty {
+	display: none;
+}
+
+.tzp-coupon__msg {
+	margin-top: 8px;
+	font-size: 13px;
+}
+
+.tzp-coupon__msg .woocommerce-error,
+.tzp-coupon__msg .woocommerce-message,
+.tzp-coupon__msg .woocommerce-info {
+	margin: 0;
+	padding: 8px 12px;
+	font-size: 13px;
+}
+
+/* Pasek podsumowania na telefonie (tworzy js/checkout.js). */
+.tzp-summary-toggle {
+	display: none;
+}
+
+@media (max-width: 1024px) {
+	.e-con.tzp-checkout-row > .e-con-inner {
+		flex-direction: column;
+	}
+
+	.e-con.tzp-checkout-side {
+		order: -1;
+	}
+
+	.tzp-summary-toggle {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		width: 100%;
+		padding: 14px 16px;
+		border: 1px solid #e6e6e6;
+		border-radius: 10px;
+		background: #fff;
+		color: inherit;
+		font-weight: 500;
+		text-transform: none;
+	}
+
+	/* Bez szarego tła przycisków Woodmarta po dotknięciu, otwarty pasek w kolorze boxu dostawy. */
+	.tzp-summary-toggle:hover,
+	.tzp-summary-toggle:focus {
+		background: #fff;
+		color: inherit;
+	}
+
+	.tzp-checkout-side.is-open .tzp-summary-toggle {
+		background: #f7efeb;
+	}
+
+	.tzp-summary-toggle__label::after {
+		content: " ▾";
+	}
+
+	.tzp-checkout-side.is-open .tzp-summary-toggle__label::after {
+		content: " ▴";
+	}
+
+	.tzp-summary-toggle__total {
+		color: rgb(140, 50, 21);
+		font-weight: 700;
+	}
+
+	/* Zwinięte podsumowanie: pod paskiem zostaje tylko kod rabatowy i użyte kupony, reszta po rozwinięciu.
+	   Wiersze są tylko ukryte, więc oryginalne pola wysyłki i paczkomatu dalej są w formularzu. */
+	.e-con.tzp-checkout-side:not(.is-open) .tzp-summary-title,
+	.e-con.tzp-checkout-side:not(.is-open) .woocommerce-checkout-review-order-table > thead,
+	.e-con.tzp-checkout-side:not(.is-open) .woocommerce-checkout-review-order-table > tbody,
+	.e-con.tzp-checkout-side:not(.is-open) .woocommerce-checkout-review-order-table > tfoot > tr:not(.tzp-coupon):not(.cart-discount) {
+		display: none;
+	}
+
+	.e-con.tzp-checkout-side:not(.is-open) .tzp-summary {
+		padding-top: 4px;
+		padding-bottom: 4px;
+	}
+
+	.e-con.tzp-checkout-side:not(.is-open) .woocommerce-checkout-review-order-table {
+		margin-bottom: 0;
+	}
+
+	/* Ukryte wiersze dalej liczą się dla selektorów rodzeństwa, więc linia oddzielająca idzie pod użytym kuponem. */
+	.e-con.tzp-checkout-side:not(.is-open) .woocommerce-checkout-review-order-table > tfoot > tr,
+	.e-con.tzp-checkout-side:not(.is-open) .woocommerce-checkout-review-order-table > tfoot > tr > * {
+		border-top: 0;
+		border-bottom: 0;
+	}
+
+	.e-con.tzp-checkout-side:not(.is-open) .woocommerce-checkout-review-order-table > tfoot > tr.cart-discount {
+		border-bottom: 1px solid #e6e6e6;
+	}
+
+	.tzp-card {
+		padding: 16px;
+	}
+}
+
+@media (max-width: 767px) {
+	/* Mniej bocznych odstępów: zostaje margines kontenera Woodmarta (15 px) i padding karty.
+	   !important, bo paddingi z ustawień elementów Elementor wypisuje z wyższą specyficznością. */
+	.e-con.tzp-checkout-row {
+		--padding-left: 0px !important;
+		--padding-right: 0px !important;
+		--gap: 14px 14px !important;
+		--row-gap: 14px !important;
+		--column-gap: 14px !important;
+	}
+
+	.e-con.tzp-checkout-main,
+	.e-con.tzp-checkout-side {
+		--padding-top: 0px !important;
+		--padding-right: 0px !important;
+		--padding-bottom: 0px !important;
+		--padding-left: 0px !important;
+	}
+
+	.tzp-card {
+		padding: 14px;
+	}
+
+	.e-con.tzp-checkout-side:not(.is-open) .tzp-summary {
+		padding-top: 2px;
+		padding-bottom: 2px;
+	}
+}
+
+@media (max-width: 600px) {
+	.tzp-delivery-methods__tiles {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Ukrycie musi wygrać z display:block powyżej. */
+.wc-ship-today-notice--hidden.tzp-delivery-box {
+	display: none !important;
+}
+
+@media (max-width: 767px) {
+	.wc-ship-today-notice.tzp-delivery-box {
+		padding: 14px 14px 14px 56px;
+		font-size: 15px;
+	}
+
+	.wc-ship-today-notice.tzp-delivery-box::before {
+		left: 14px;
+		width: 28px;
+		height: 28px;
+	}
+}

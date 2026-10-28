@@ -1,0 +1,41 @@
+# TeZapiekanki: repozytorium własnego kodu w katalogu WordPressa.
+#
+# Biała lista: ignorujemy wszystko (rdzeń WP, Woodmart, cudze wtyczki,
+# uploads, cache, backupy, wp-config.php z hasłami), a dopuszczamy tylko
+# kod i dokumentację, które sami zmieniamy.
+#
+# Wtyczki `tezapiekanki` i `wc-ship-today-notice` mają własne repozytoria
+# (wp-content/plugins/*/.git), więc tu ich nie śledzimy. Gdyby dodać je
+# tutaj, git zapisałby je jako puste "embedded repository" bez plików.
+
+/*
+
+# Dokumentacja projektu i testy E2E
+!/.gitignore
+!/.gitattributes
+!/CLAUDE.md
+!/.claude/
+/.claude/*
+!/.claude/doc/
+!/.claude/tests/
+/.claude/settings.local.json
+# stara kopia wtyczki z własnym .git (aktualna jest w wp-content/plugins)
+/.claude/doc/wc-ship-today-notice/
+
+!/wp-content/
+/wp-content/*
+
+# Motyw potomny
+!/wp-content/themes/
+/wp-content/themes/*
+!/wp-content/themes/woodmart-child/
+
+# Śmieci systemowe i edytora
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+*.swp
+.idea/
+.vscode/
+node_modules/
