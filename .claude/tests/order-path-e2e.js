@@ -1,13 +1,13 @@
-// Test pełnej ścieżki zamówienia ze zrzutami ekranu: strona główna i popup belki → sklep → karta produktu → zestaw 9
-// → koszyk → checkout (Paczkomat, przelew) → strona podziękowania → panel (lista, zamówienie, zmiana statusu na
-// "W trakcie realizacji") → raport "Zestawienie produktów" (CSV) → maile w Mailpit. Do tego telefon: karta, koszyk,
-// checkout (bez zamówienia).
+// Full order path test with screenshots: home page and bar popup → shop → product page → bundle of 9
+// → cart → checkout (Paczkomat, bank transfer) → thank-you page → admin (list, order, status change to
+// "W trakcie realizacji") → "Zestawienie produktów" report (CSV) → emails in Mailpit. Plus the phone: product page, cart,
+// checkout (no order).
 //
-// Uruchomienie (kopia lokalna, Mailpit na http://localhost:10054, przelew BACS włączony na czas testu jak w
+// Usage (local copy, Mailpit at http://localhost:10054, BACS bank transfer enabled for the duration of the test as in
 // checkout-e2e.js):
 //   PPTR_DIR="katalog/z/node_modules" TZP_SHOTS="katalog/na/zrzuty" node .claude/tests/order-path-e2e.js
-// Logowanie do panelu: test tworzy przez WP-CLI sesję administratora (TZP_ADMIN, domyślnie "Marcin") i usuwa ją na końcu.
-// Po teście: wyłącz BACS, zamówienie testowe (sciezka-test@example.com, numer w order-path-id.txt) anuluj i usuń.
+// Admin login: the test creates an administrator session via WP-CLI (TZP_ADMIN, default "Marcin") and deletes it at the end.
+// After the test: disable BACS, cancel and delete the test order (sciezka-test@example.com, number in order-path-id.txt).
 const path = require('path');
 const fs = require('fs');
 const { execFileSync } = require('child_process');
@@ -81,7 +81,7 @@ const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,
 
   try {
     /*
-     * 1. Klient na desktopie.
+     * 1. Customer on desktop.
      */
     const ctx = await browser.createBrowserContext();
     const page = await ctx.newPage();
@@ -186,7 +186,7 @@ const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,
     ok('zamówienie: daty z naszego modułu, bez Iconic, paczkomat zapisany', meta.ship && meta.delivery && !meta.iconic && meta.point === 'WAW01M', JSON.stringify(meta));
 
     /*
-     * 2. Panel administratora.
+     * 2. Admin panel.
      */
     session = JSON.parse(wp('eval', `$u = get_user_by("login", "${process.env.TZP_ADMIN || 'Marcin'}"); $exp = time() + 3 * HOUR_IN_SECONDS; $t = WP_Session_Tokens::get_instance($u->ID)->create($exp); echo wp_json_encode(array("uid" => $u->ID, "token" => $t, "auth" => array(AUTH_COOKIE, wp_generate_auth_cookie($u->ID, $exp, "auth", $t)), "li" => array(LOGGED_IN_COOKIE, wp_generate_auth_cookie($u->ID, $exp, "logged_in", $t))));`));
     const actx = await browser.createBrowserContext();
@@ -209,21 +209,21 @@ const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,
     ok('panel: zamówienie z datą wysyłki i dostawy', /Wysyłka/.test(edit) && /dostawa/i.test(edit), edit.slice(0, 160));
     await shot(admin, 'panel-zamowienie', { fullPage: true });
 
-    // Zmiana statusu jak w panelu: wysyła klientowi mail "w trakcie realizacji", zamówienie trafia do raportu.
+    // Status change as in the admin: sends the customer the "processing" email, the order goes into the report.
     await admin.evaluate(() => { jQuery('#order_status').val('wc-processing').trigger('change'); });
     await Promise.all([admin.waitForNavigation({ waitUntil: 'networkidle2', timeout: 120000 }), admin.click('button.save_order')]);
     const status = wp('eval', `echo wc_get_order(${orderId})->get_status();`);
     ok('panel: status zmieniony na "W trakcie realizacji"', status === 'processing', status);
     await shot(admin, 'panel-zamowienie-w-realizacji');
 
-    // Raport produkcyjny na dzień wysyłki tego zamówienia.
+    // Production report for this order's ship date.
     await admin.goto(BASE + '/wp-admin/admin.php?page=wc-product-summary', { waitUntil: 'networkidle2', timeout: 120000 });
     await admin.$eval('input[name="date_from"]', (el, v) => { el.value = v; }, meta.ship);
     await admin.$eval('input[name="date_to"]', (el, v) => { el.value = v; }, meta.ship);
     await shot(admin, 'panel-raport-zestawienie-produktow');
     const csv = await admin.evaluate(async () => {
       const form = document.querySelector('input[name="action"][value="generate_product_summary"]').form;
-      // form.action zwróciłby pole <input name="action">, nie adres formularza.
+      // form.action would return the <input name="action"> field, not the form URL.
       const res = await fetch(form.getAttribute('action'), { method: 'POST', body: new FormData(form), credentials: 'same-origin' });
       return res.text();
     });
@@ -232,7 +232,7 @@ const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,
     await actx.close();
 
     /*
-     * 3. Telefon (bez zamówienia).
+     * 3. Phone (no order).
      */
     const mctx = await browser.createBrowserContext();
     const mob = await mctx.newPage();
@@ -259,14 +259,14 @@ const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,
     await mctx.close();
 
     /*
-     * 4. Maile (Mailpit).
+     * 4. Emails (Mailpit).
      */
     let mails = [];
     for (let i = 0; i < 30; i++) {
       const list = await mailpit('/api/v1/messages?limit=200');
       mails = (list.messages || []).filter((m) => !knownMails.has(m.ID) && ((m.To || []).some((t) => t.Address === EMAIL) || new RegExp(`${orderId}\\b`).test(m.Subject)));
       if (mails.length >= 3) { break; }
-      if (i === 10) { try { wp('action-scheduler', 'run'); wp('cron', 'event', 'run', '--due-now'); } catch (e) { /* bez zadań */ } }
+      if (i === 10) { try { wp('action-scheduler', 'run'); wp('cron', 'event', 'run', '--due-now'); } catch (e) { /* no jobs */ } }
       await sleep(1000);
     }
     mails.sort((a, b) => new Date(a.Created) - new Date(b.Created));
@@ -294,7 +294,7 @@ const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,
     ok('maile: do klienta (przyjęte + w trakcie realizacji) i do sklepu (nowe zamówienie)', toCustomer.length >= 2 && toShop.length >= 1, mailList.map((m) => `${m.subject} → ${m.to}`).join(' | '));
     ok('maile: w każdym data wysyłki i planowana dostawa', mailList.length > 0 && mailList.every((m) => m.dates), mailList.map((m) => `${m.subject}: ${m.dates}`).join(' | '));
     ok('maile: bez pustych "Nazwa firmy:" i "Numer NIP:"', mailList.length > 0 && mailList.every((m) => !m.emptyLabels));
-    // Gdy w WooCommerce włączony jest adres odpowiedzi (Reply-to), klient widzi go w stopce zamiast adresu nadawcy noreply@.
+    // When a Reply-to address is enabled in WooCommerce, the customer sees it in the footer instead of the noreply@ sender address.
     const replyTo = wp('eval', 'echo "yes" === get_option("woocommerce_email_reply_to_enabled") ? get_option("woocommerce_email_reply_to_address") : "";');
     if (replyTo) {
       ok(`maile do klienta: kontakt i odpowiedź na ${replyTo}, bez noreply@ w treści`, toCustomer.every((m) => !m.noreply && m.replyTo === replyTo), toCustomer.map((m) => `reply-to ${m.replyTo}, noreply w treści: ${m.noreply}`).join(' | '));
@@ -304,7 +304,7 @@ const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,
     ok('wyjątek w teście', false, e.message);
   } finally {
     if (session) {
-      try { wp('eval', `WP_Session_Tokens::get_instance(${session.uid})->destroy("${session.token}");`); } catch (e) { /* sesja wygaśnie sama */ }
+      try { wp('eval', `WP_Session_Tokens::get_instance(${session.uid})->destroy("${session.token}");`); } catch (e) { /* the session will expire on its own */ }
     }
     ok('brak błędów JS', errors.length === 0, errors.slice(0, 3).join(' || '));
     await browser.close();

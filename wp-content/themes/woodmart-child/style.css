@@ -1,6 +1,6 @@
 /*
  Theme Name:   Woodmart Child - TeZapiekanki
- Description:  Motyw potomny Woodmart dla tezapiekanki.pl. Własny kod sklepu, który nie może zniknąć przy aktualizacji Woodmarta.
+ Description:  Woodmart child theme for tezapiekanki.pl. Custom shop code that must not be lost on a Woodmart update.
  Author:       MS-M.pl
  Author URI:   https://ms-m.pl
  Template:     woodmart
@@ -9,8 +9,8 @@
 */
 
 /* =========================================================
-   Termin dostawy na karcie produktu
-   Shortcode [ship_today_notice class="tzp-delivery-box"] pod krótkim opisem (layouty 6480 i 6533).
+   Delivery date on the product page
+   Shortcode [ship_today_notice class="tzp-delivery-box"] below the short description (layouts 6480 and 6533).
    ========================================================= */
 
 .wc-ship-today-notice.tzp-delivery-box {
@@ -27,7 +27,7 @@
 	line-height: 1.4;
 }
 
-/* Ikona samochodu dostawczego. */
+/* Delivery van icon. */
 .wc-ship-today-notice.tzp-delivery-box::before {
 	content: "";
 	position: absolute;
@@ -57,9 +57,9 @@
 }
 
 /* =========================================================
-   Info praktyczne pod "Dodaj do koszyka"
-   HTML Block 31279 (kontener z klasą tzp-info, 4 widgety wd_infobox), layouty 6480 i 6533.
-   Woodmart daje 20 px między ikoną a tekstem i 10 px nad opisem, tu ciaśniej.
+   "Info praktyczne" below "Dodaj do koszyka"
+   HTML Block 31279 (container with class tzp-info, 4 wd_infobox widgets), layouts 6480 and 6533.
+   Woodmart uses 20 px between icon and text and 10 px above the description; tighter here.
    ========================================================= */
 
 .tzp-info .wd-info-box {
@@ -75,11 +75,11 @@
 }
 
 /* =========================================================
-   Galeria produktu (layouty 6480 i 6533, widget galerii z klasą tzp-gallery, inc/product-gallery.php)
-   Desktop i tablet: duże pierwsze zdjęcie ("Bottom grid" Woodmarta), pod nim kafelki 4:3 po 2 w rzędzie.
-   Przy więcej niż 6 zdjęciach widać duże + 4 kafelki, a przycisk "Zobacz więcej zdjęć" pod siatką
-   rozwija resztę w dół (i zwija z powrotem). Kliknięcie zdjęcia otwiera lightbox. Telefon: karuzela
-   Woodmarta z wystającym kolejnym zdjęciem i licznikiem "1 / 8" (js/product-gallery.js).
+   Product gallery (layouts 6480 and 6533, gallery widget with class tzp-gallery, inc/product-gallery.php)
+   Desktop and tablet: large first image (Woodmart "Bottom grid"), 4:3 tiles below, 2 per row.
+   With more than 6 images, the large one + 4 tiles are visible, and the "Zobacz więcej zdjęć" button below the grid
+   expands the rest downwards (and collapses it back). Clicking an image opens the lightbox. Mobile: Woodmart
+   carousel with the next image peeking in and a "1 / 8" counter (js/product-gallery.js).
    ========================================================= */
 
 .tzp-gallery .woocommerce-product-gallery__image > a {
@@ -93,8 +93,8 @@
 }
 
 @media (min-width: 769px) {
-	/* Kafelki w jednej proporcji: zdjęcia 3:2 tracą po 5,5% z boków, kwadratowe po 12,5% z góry i dołu.
-	   Duże zdjęcie zostaje w swojej proporcji (zwykle kwadrat). */
+	/* Tiles in one aspect ratio: 3:2 images lose 5.5% on each side, square ones 12.5% at top and bottom.
+	   The large image keeps its own ratio (usually square). */
 	.tzp-gallery .wd-carousel-wrap > .wd-carousel-item:not(:first-child) .woocommerce-product-gallery__image img {
 		width: 100%;
 		height: auto;
@@ -102,8 +102,8 @@
 		object-fit: cover;
 	}
 
-	/* Zestawy (WPC Bundles): zdjęcia są pionowe 2:3, duże miałoby 930 px wysokości (tablet 1230 px).
-	   Przycinamy je do kwadratu jak u zapiekanek; w lightboxie zostaje całe. */
+	/* Bundles (WPC Bundles): images are portrait 2:3, the large one would be 930 px tall (tablet 1230 px).
+	   Crop it to a square like the single products; the lightbox still shows the whole image. */
 	.product-type-woosb .tzp-gallery .wd-carousel-wrap > .wd-carousel-item:first-child .woocommerce-product-gallery__image img {
 		width: 100%;
 		height: auto;
@@ -111,13 +111,13 @@
 		object-fit: cover;
 	}
 
-	/* Więcej niż 6 zdjęć: zostaje duże + 4 kafelki. Od razu w CSS (:has), żeby strona nie skakała
-	   po załadowaniu skryptu. Klasę --expanded dodaje przycisk pod siatką. */
+	/* More than 6 images: keep the large one + 4 tiles. Done in CSS right away (:has) so the page doesn't jump
+	   once the script loads. The --expanded class is added by the button below the grid. */
 	.tzp-gallery .woocommerce-product-gallery:not(.tzp-gallery--expanded):has(.wd-carousel-item:nth-child(7)) .wd-carousel-wrap > .wd-carousel-item:nth-child(n+6) {
 		display: none;
 	}
 
-	/* Odsłonięte kafelki pojawiają się łagodnie, wysokość siatki animuje skrypt. */
+	/* Revealed tiles fade in; the grid height is animated by the script. */
 	.tzp-gallery .tzp-gallery--expanded .wd-carousel-wrap > .wd-carousel-item:nth-child(n+6) {
 		animation: tzp-gallery-in 0.35s ease both;
 	}
@@ -150,7 +150,7 @@
 		color: rgb(140, 50, 21);
 	}
 
-	/* Strzałka w dół, po rozwinięciu w górę. */
+	/* Arrow pointing down, up when expanded. */
 	.tzp-gallery__toggle-icon {
 		width: 8px;
 		height: 8px;
@@ -186,7 +186,7 @@
 }
 
 @media (max-width: 768px) {
-	/* Wystające kolejne zdjęcie: Woodmart bierze liczbę slajdów z --wd-col-sm (w atrybucie style jest 1). */
+	/* Peeking next image: Woodmart reads the slide count from --wd-col-sm (the style attribute has 1). */
 	.tzp-gallery .woocommerce-product-gallery__wrapper {
 		--wd-col-sm: 1.15 !important;
 	}
@@ -215,14 +215,14 @@
 }
 
 /* =========================================================
-   Koszyk (layout 6460)
-   Desktop: lewa kolumna .tzp-cart-left = lista produktów + "Dobierz do zamówienia",
-   prawa .tzp-cart-right = termin dostawy + wartość koszyka.
-   Tablet i telefon: lista produktów, potem termin i wartość koszyka, na końcu "Dobierz do zamówienia"
-   (.tzp-cart-cross), żeby przycisk przejścia do zamówienia nie był pod polecanymi produktami.
+   Cart (layout 6460)
+   Desktop: left column .tzp-cart-left = product list + "Dobierz do zamówienia",
+   right .tzp-cart-right = delivery date + cart totals.
+   Tablet and mobile: product list, then delivery date and cart totals, "Dobierz do zamówienia" last
+   (.tzp-cart-cross), so the proceed-to-checkout button isn't below the recommended products.
    ========================================================= */
 
-/* Box z terminem równo z górą lewej kolumny. */
+/* Delivery date box aligned with the top of the left column. */
 .tzp-cart-right .wc-ship-today-notice.tzp-delivery-box {
 	margin-top: 0;
 }
@@ -246,14 +246,14 @@
 }
 
 /* =========================================================
-   Checkout (layouty 6467 i 6470, inc/checkout.php, js/checkout.js)
-   Desktop: .tzp-checkout-main (kroki: Kontakt i dane, Dostawa, Płatność) + .tzp-checkout-side (podsumowanie, przyklejone).
-   Tablet i telefon: podsumowanie zwinięte w pasek na górze, pod nim kroki.
+   Checkout (layouts 6467 and 6470, inc/checkout.php, js/checkout.js)
+   Desktop: .tzp-checkout-main (steps: Kontakt i dane, Dostawa, Płatność) + .tzp-checkout-side (summary, sticky).
+   Tablet and mobile: summary collapsed into a bar at the top, steps below.
    ========================================================= */
 
-/* CHECKOUT TOP (layout 6467): box z "Powracający klient?" i komunikatami WooCommerce. Zalogowany klient nie widzi
-   formularza logowania (widget nic nie wypisuje), a kupon jest w podsumowaniu, więc bez komunikatów box byłby pusty.
-   :has() działa też po dopisaniu komunikatu przez JS. */
+/* CHECKOUT TOP (layout 6467): box with "Powracający klient?" and WooCommerce notices. A logged-in customer doesn't see
+   the login form (the widget outputs nothing) and the coupon is in the summary, so without notices the box would be empty.
+   :has() also works after a notice is added by JS. */
 .e-con.tzp-checkout-top__login:not(:has(*)) {
 	display: none;
 }
@@ -269,7 +269,7 @@
 	background: #fff;
 }
 
-/* Nagłówki kroków z numerem. */
+/* Numbered step headings. */
 .tzp-checkout-main {
 	counter-reset: tzp-step;
 }
@@ -296,7 +296,7 @@
 	vertical-align: 2px;
 }
 
-/* Podsumowanie przyklejone przy przewijaniu. */
+/* Summary sticks while scrolling. */
 @media (min-width: 1025px) {
 	.e-con.tzp-checkout-side {
 		position: sticky;
@@ -304,12 +304,12 @@
 	}
 }
 
-/* Kraj: sklep wysyła tylko do Polski, pole zostaje w formularzu (wartość PL), ale go nie pokazujemy. */
+/* Country: the shop ships only to Poland; the field stays in the form (value PL) but is not shown. */
 .tzp-checkout-main #billing_country_field {
 	display: none !important;
 }
 
-/* Faktura na firmę (js/checkout.js). */
+/* Company invoice (js/checkout.js). */
 .tzp-is-hidden {
 	display: none !important;
 }
@@ -322,7 +322,7 @@
 	cursor: pointer;
 }
 
-/* Sekcja "Dostawa": kafelki metod (etykiety oryginalnych pól WooCommerce). */
+/* "Dostawa" section: method tiles (labels of the original WooCommerce inputs). */
 .tzp-delivery-methods__tiles {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -386,7 +386,7 @@
 	color: #fff;
 }
 
-/* Wybrany paczkomat (js/checkout.js czyta go z pól wtyczki przewoźnika). */
+/* Selected parcel locker (js/checkout.js reads it from the carrier plugin's inputs). */
 .tzp-parcel__selected {
 	display: grid;
 	flex: 1 1 220px;
@@ -429,7 +429,7 @@
 	color: #666;
 }
 
-/* Box z terminem w wersji kompaktowej nad kafelkami terminu. */
+/* Compact delivery date box above the date tiles. */
 .wc-ship-today-notice.tzp-delivery-box.tzp-delivery-box--compact {
 	margin: 4px 0 0;
 	padding: 12px 14px 12px 54px;
@@ -442,8 +442,8 @@
 	height: 26px;
 }
 
-/* Podsumowanie: oryginalny wybór wysyłki i przycisk Apaczki zostają w formularzu, ale są niewidoczne.
-   Kafelki w sekcji "Dostawa" to etykiety tych pól, a nasz przycisk paczkomatu uruchamia przycisk Apaczki. */
+/* Summary: the original shipping selection and the Apaczka button stay in the form but are invisible.
+   The tiles in the "Dostawa" section are labels of these inputs, and our parcel locker button triggers the Apaczka button. */
 .tzp-checkout-side #shipping_method input[type="radio"] {
 	position: absolute;
 	width: 1px;
@@ -465,7 +465,7 @@
 	display: none;
 }
 
-/* Kod rabatowy nad "Łącznie". */
+/* Coupon code above "Łącznie". */
 .tzp-coupon td {
 	padding-top: 12px !important;
 	padding-bottom: 12px !important;
@@ -513,7 +513,7 @@
 	font-size: 13px;
 }
 
-/* Pasek podsumowania na telefonie (tworzy js/checkout.js). */
+/* Summary bar on mobile (created by js/checkout.js). */
 .tzp-summary-toggle {
 	display: none;
 }
@@ -541,7 +541,7 @@
 		text-transform: none;
 	}
 
-	/* Bez szarego tła przycisków Woodmarta po dotknięciu, otwarty pasek w kolorze boxu dostawy. */
+	/* No grey Woodmart button background on tap; the open bar uses the delivery box colour. */
 	.tzp-summary-toggle:hover,
 	.tzp-summary-toggle:focus {
 		background: #fff;
@@ -565,8 +565,8 @@
 		font-weight: 700;
 	}
 
-	/* Zwinięte podsumowanie: pod paskiem zostaje tylko kod rabatowy i użyte kupony, reszta po rozwinięciu.
-	   Wiersze są tylko ukryte, więc oryginalne pola wysyłki i paczkomatu dalej są w formularzu. */
+	/* Collapsed summary: only the coupon code and applied coupons stay below the bar, the rest shows when expanded.
+	   The rows are only hidden, so the original shipping and parcel locker inputs remain in the form. */
 	.e-con.tzp-checkout-side:not(.is-open) .tzp-summary-title,
 	.e-con.tzp-checkout-side:not(.is-open) .woocommerce-checkout-review-order-table > thead,
 	.e-con.tzp-checkout-side:not(.is-open) .woocommerce-checkout-review-order-table > tbody,
@@ -583,7 +583,7 @@
 		margin-bottom: 0;
 	}
 
-	/* Ukryte wiersze dalej liczą się dla selektorów rodzeństwa, więc linia oddzielająca idzie pod użytym kuponem. */
+	/* Hidden rows still count for sibling selectors, so the separator line goes below the applied coupon. */
 	.e-con.tzp-checkout-side:not(.is-open) .woocommerce-checkout-review-order-table > tfoot > tr,
 	.e-con.tzp-checkout-side:not(.is-open) .woocommerce-checkout-review-order-table > tfoot > tr > * {
 		border-top: 0;
@@ -600,8 +600,8 @@
 }
 
 @media (max-width: 767px) {
-	/* Mniej bocznych odstępów: zostaje margines kontenera Woodmarta (15 px) i padding karty.
-	   !important, bo paddingi z ustawień elementów Elementor wypisuje z wyższą specyficznością. */
+	/* Less side spacing: only the Woodmart container margin (15 px) and the card padding remain.
+	   !important because Elementor outputs paddings from element settings with higher specificity. */
 	.e-con.tzp-checkout-row {
 		--padding-left: 0px !important;
 		--padding-right: 0px !important;
@@ -634,7 +634,7 @@
 	}
 }
 
-/* Ukrycie musi wygrać z display:block powyżej. */
+/* Hiding must win over display:block above. */
 .wc-ship-today-notice--hidden.tzp-delivery-box {
 	display: none !important;
 }

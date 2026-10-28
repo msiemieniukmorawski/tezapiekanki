@@ -1,15 +1,15 @@
 <?php
 /**
- * Popupy i floating blocki Woodmarta budowane w Elementorze.
+ * Woodmart popups and floating blocks built in Elementor.
  *
- * Błąd zgodności Woodmart 8.5.5 + Elementor 4.3 (znaleziony 19.10): moduł MCP Elementora (Pro: Manage_Site_Parts_Ability)
- * na init z priorytetem 5 wywołuje rejestrację typów dokumentów (elementor/documents/register). Woodmart podpina swoje
- * typy wd_popup i wd_floating_block pod ten hook dopiero na init 10 (Floating_Blocks\Main::include_files), więc nie
- * zdążą się zarejestrować. Skutek: Woodmart traktuje popup z Elementora jak blok Gutenberga i bierze jego domyślne
- * ustawienia (wyzwalacz "po czasie" 0 s, "persistent close", warunek "wszędzie"), a ustawienia z Elementora
- * (wyzwalacz po kliknięciu, warunki) są pomijane. Edytor Elementora też nie pokazuje wtedy ustawień popupu.
+ * Woodmart 8.5.5 + Elementor 4.3 compatibility bug (found 2026-10-19): Elementor's MCP module (Pro: Manage_Site_Parts_Ability)
+ * triggers document type registration (elementor/documents/register) on init priority 5. Woodmart hooks its
+ * wd_popup and wd_floating_block types onto that hook only on init 10 (Floating_Blocks\Main::include_files), so they
+ * never get registered. Result: Woodmart treats an Elementor popup as a Gutenberg block and uses its default
+ * settings ("after time" trigger at 0 s, "persistent close", condition "everywhere"), while the Elementor settings
+ * (click trigger, conditions) are ignored. The Elementor editor doesn't show the popup settings either.
  *
- * Tu dorejestrowujemy te typy zaraz po Woodmarcie. Gdy Woodmart zdąży sam (np. po poprawce w aktualizacji), funkcja nic nie robi.
+ * Here we register these types right after Woodmart. If Woodmart manages it itself (e.g. fixed in an update), the function does nothing.
  */
 
 defined( 'ABSPATH' ) || exit;

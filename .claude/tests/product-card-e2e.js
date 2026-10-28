@@ -1,8 +1,8 @@
-// Uruchomienie: PPTR_DIR="katalog/z/node_modules" node .claude/tests/product-card-e2e.js (puppeteer-core 23.11.1, zainstalowany Chrome).
-// Test karty zapiekanki po wgraniu kart produktów (20.10.2026): wartość odżywcza i karta PDF ([tzp_nutrition]),
-// piny smaków ([tzp_flavor_pins]), dane produktu dla Google (Rank Math + includes/class-product-schema.php), opisy.
-// Część 1 bez przeglądarki (HTML 11 produktów i zestawu), część 2 w Chrome (desktop, telefon). Nic nie zapisuje.
-// Zrzuty: %TEMP%\tzp-product-card-e2e.
+// Usage: PPTR_DIR="katalog/z/node_modules" node .claude/tests/product-card-e2e.js (puppeteer-core 23.11.1, installed Chrome).
+// Test of the zapiekanka product page after importing the product cards (2026-10-20): nutrition values and PDF card ([tzp_nutrition]),
+// flavour pins ([tzp_flavor_pins]), product data for Google (Rank Math + includes/class-product-schema.php), descriptions.
+// Part 1 without a browser (HTML of 11 products and a bundle), part 2 in Chrome (desktop, phone). Writes nothing.
+// Screenshots: %TEMP%\tzp-product-card-e2e.
 const path = require('path');
 const puppeteer = require(process.env.PPTR_DIR ? path.join(process.env.PPTR_DIR, 'node_modules', 'puppeteer-core') : 'puppeteer-core');
 const OUT = path.join(require('os').tmpdir(), 'tzp-product-card-e2e');
@@ -12,7 +12,7 @@ const ok = (name, pass, info = '') => { results.push(pass); console.log(`${pass 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const BASE = 'http://tezapiekanki.local/';
 
-// Z kart od klienta: slug produktu => [plik karty, waga, energia, tłuszcz, nasycone, węglowodany, cukry, białko, sól].
+// From the client's cards: product slug => [card file, weight, energy, fat, saturates, carbohydrates, sugars, protein, salt].
 const CARDS = {
   'zapiekanka-tradycyjna': ['tradycyjna', '319 g', '829 kJ / 198 kcal', '6,7 g', '4,4 g', '23,6 g', '2,1 g', '11,2 g', '1,3 g'],
   'zapiekanka-wiejska': ['wiejska', '449 g', '799 kJ / 191 kcal', '8,3 g', '4,4 g', '17,0 g', '1,5 g', '12,2 g', '1,4 g'],
@@ -35,14 +35,14 @@ const products = (html) => {
     try {
       const d = JSON.parse(m[1]);
       (d['@graph'] || [d]).forEach((n) => { if (n['@type'] === 'Product') out.push(n); });
-    } catch (e) { /* inne skrypty */ }
+    } catch (e) { /* other scripts */ }
   }
   return out;
 };
 
 (async () => {
   /*
-   * Część 1: HTML wszystkich 11 smaków.
+   * Part 1: HTML of all 11 flavours.
    */
   const pdfChecked = new Set();
   for (const [slug, card] of Object.entries(CARDS)) {
@@ -62,7 +62,7 @@ const products = (html) => {
       ok(`${slug}: PDF dostępny`, r.status === 200 && /pdf/.test(r.headers.get('content-type') || ''), `${r.status} ${r.headers.get('content-type')}`);
     }
 
-    // Stara tabela Woodmarta (klasa tabelkakal; reguła .tabelkakal w Dodatkowym CSS zostaje), widget post-info z linkiem z pola.
+    // Old Woodmart table (class tabelkakal; the .tabelkakal rule in Additional CSS stays), post-info widget with the link from the field.
     ok(`${slug}: bez starej tabeli i przycisku "Pobierz kartę produktu"`, !/class="[^"]*tabelkakal|Wartości odżywcze na 100g|elementor-widget-post-info|POBIERZ KARTĘ PRODUKTU/.test(html));
 
     const pins = [...html.matchAll(/<a class="tzp-flavors__pin([^"]*)" href="([^"]+)"/g)];
@@ -83,18 +83,18 @@ const products = (html) => {
       `name=${p.name}`);
   }
 
-  // Ostatni pin w kolejności sklepu, niedostępny smak wyszarzony.
+  // Pins in shop order (Tradycyjna first), unavailable flavour greyed out.
   const salami = await (await fetch(BASE + 'zapiekanka-salami/')).text();
   const names = [...salami.matchAll(/<a class="tzp-flavors__pin[^"]*"[^>]*>([^<]+)</g)].map((m) => m[1]);
   ok('piny w kolejności sklepu (pierwsza Tradycyjna)', names[0] === 'Tradycyjna', names.join(', '));
   ok('niedostępny smak (na dziko) wyszarzony', /tzp-flavors__pin is-out" href="[^"]*zapiekanka-na-dziko/.test(salami));
 
-  // Zestaw (layout 6533) bez zmian.
+  // Bundle (layout 6533) unchanged.
   const zestaw = await (await fetch(BASE + 'zestaw-9-zapiekanek/')).text();
   ok('zestaw: bez tabeli wartości i pinów', !/tzp-nutrition|tzp-flavors/.test(zestaw.replace(/<link[^>]+>/g, '')));
 
   /*
-   * Część 2: przeglądarka.
+   * Part 2: browser.
    */
   const browser = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true, args: ['--no-first-run'] });
   const errors = [];
@@ -122,7 +122,7 @@ const products = (html) => {
       table: !!t && t.getBoundingClientRect().height > 200,
       linkVisible: !!link && link.getBoundingClientRect().width > 150 && getComputedStyle(link).borderTopColor === 'rgb(140, 50, 21)',
       indent: sub && row ? parseFloat(getComputedStyle(sub).paddingLeft) - parseFloat(getComputedStyle(row).paddingLeft) : 0,
-      // Piny pod formularzem zakupu (cena i "Dodaj do koszyka"), nad blokiem ikon (decyzja 20.10).
+      // Pins below the purchase form (price and "Dodaj do koszyka"), above the icon block (decision of 2026-10-20).
       pinsUnderForm: !!pins && !!atc && !!info && pins.getBoundingClientRect().top >= atc.getBoundingClientRect().bottom - 1 && pins.getBoundingClientRect().top - atc.getBoundingClientRect().bottom < 60 && pins.getBoundingClientRect().bottom <= info.getBoundingClientRect().top + 1,
       tableUnderInfo: !!t && !!info && t.getBoundingClientRect().top > info.getBoundingClientRect().bottom - 1,
       uppercaseValues: t ? getComputedStyle(t.querySelector('td')).textTransform : '',
@@ -139,7 +139,7 @@ const products = (html) => {
   ok('desktop: klik w pin "Kebab" otwiera kartę Kebab', /zapiekanka-kebab/.test(page.url()) && await page.$eval('.tzp-flavors__pin.is-current', (a) => a.textContent.trim()) === 'Kebab', page.url());
   await ctx.close();
 
-  // Telefon
+  // Phone
   ({ ctx, page } = await open('zapiekanka-szwedzka', { width: 390, height: 844, isMobile: true, hasTouch: true }));
   info = await page.evaluate(() => {
     const list = document.querySelector('.tzp-flavors__list');

@@ -1,18 +1,18 @@
-// Pary zrzutów "przed / po" do case study z suwakiem porównania (img-comparison-slider na ms-m.pl): dla każdego
-// widoku dwa osobne pliki old_<slug>.png i new_<slug>.png o identycznym wymiarze i kadrze. "Przed" domyślnie
-// z produkcji https://tezapiekanki.pl (sprzed zmian), "po" z kopii lokalnej.
+// Before/after screenshot pairs for the case study with a comparison slider (img-comparison-slider on ms-m.pl): for each
+// view two separate files old_<slug>.png and new_<slug>.png with identical dimensions and framing. "Before" defaults
+// to production https://tezapiekanki.pl (pre-change), "after" to the local copy.
 //
-// Uruchomienie:
+// Usage:
 //   PPTR_DIR="katalog/z/node_modules" OUT="katalog/wynikowy" node .claude/tests/case-study-shots.js
-//   (BEFORE i AFTER zmieniają adresy stron "przed" i "po", ONLY=desktop/produkt,telefon/hero tylko wybrane widoki)
+//   (BEFORE and AFTER override the "before" and "after" base URLs, ONLY=desktop/produkt,telefon/hero runs only the selected views)
 //
-// Kadry:
-// - desktop: ekran 1440 x 803 (proporcja 809 x 451 jak w case study Leaf No Trace) albo wycinek wokół elementu
-//   w podwójnej rozdzielczości, zaczepiony o ten sam element na obu stronach,
-// - telefon: ekran 390 x 844 w podwójnej rozdzielczości (780 x 1688), tablet 820 x 1180 (1640 x 2360).
-// Na obu stronach blokowane są statystyki i piksele (GTM, GA, Facebook, TikTok), chowany baner cookies i pasek
-// "Dodaj do koszyka" (poza widokiem, który go pokazuje). LiteSpeed na produkcji uruchamia JS po pierwszym ruchu
-// użytkownika, więc przed zrzutem jest ruch myszy i przewinięcie. Koszyk i checkout: 1 zapiekanka w koszyku, bez zamówienia.
+// Framing:
+// - desktop: 1440 x 803 viewport (809 x 451 aspect ratio as in the Leaf No Trace case study) or a crop around an element
+//   at double resolution, anchored to the same element on both sites,
+// - phone: 390 x 844 viewport at double resolution (780 x 1688), tablet 820 x 1180 (1640 x 2360).
+// On both sites analytics and pixels are blocked (GTM, GA, Facebook, TikTok), the cookie banner and the sticky
+// "Dodaj do koszyka" bar are hidden (except in the view that shows it). LiteSpeed on production starts JS after the first user
+// interaction, so there is a mouse move and a scroll before each shot. Cart and checkout: 1 zapiekanka in the cart, no order.
 const path = require('path');
 const fs = require('fs');
 const puppeteer = require(process.env.PPTR_DIR ? path.join(process.env.PPTR_DIR, 'node_modules', 'puppeteer-core') : 'puppeteer-core');
@@ -28,11 +28,11 @@ const DEVICES = {
 const BLOCK = /googletagmanager|google-analytics|analytics\.google|doubleclick|googleadservices|facebook\.net|facebook\.com\/tr|connect\.facebook|tiktok|pinimg|pinterest|hotjar|clarity\.ms|cookieyes|cdn-cookie|snap\.licdn/i;
 const HIDE = '.cky-consent-container,.cky-overlay,.cky-btn-revisit-wrapper,.cky-modal,.wcc-consent-container,.wcc-overlay,.wcc-revisit-bottom-left,#cookie-law-info-bar{display:none!important}';
 const HIDE_STICKY = '.wd-sticky-btn,.scrollToTop,.wd-scroll-top{display:none!important}';
-// Przyklejony nagłówek po przewinięciu zasłaniałby górę kadru (w obu wersjach jest taki sam).
+// The sticky header after scrolling would cover the top of the frame (it is the same in both versions).
 const HIDE_STICKY_HEADER = '.whb-header.whb-sticked,.whb-sticked .whb-main-header{visibility:hidden!important}';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Szukanie elementów w przeglądarce (pierwszy widoczny).
+// Element lookup in the browser (first visible one).
 const FIND = {
   price: () => [...document.querySelectorAll('.elementor-element-1b46f25')].find((e) => e.offsetParent),
   summary: () => document.querySelector('.elementor-element-bed0dcc'),
@@ -41,7 +41,7 @@ const FIND = {
   productFaq: () => document.querySelector('.tzp-faq') || [...document.querySelectorAll('h2')].find((h) => /FAQ|pytania/i.test(h.textContent) && h.offsetParent),
   homeFlavors: () => [...document.querySelectorAll('.elementor-element-709318e, .elementor-element-391e7b3')].find((e) => e.offsetParent),
   homeFaq: () => document.querySelector('.elementor-element-2e3bb3e'),
-  // Po: karta "Dostawa" z kafelkami terminów; przed: sekcja "Wybierz datę wysyłki zamówienia" z kalendarzem Iconic.
+  // After: the "Dostawa" card with date tiles; before: the "Wybierz datę wysyłki zamówienia" section with the Iconic calendar.
   checkoutDate: () => {
     const tiles = document.querySelector('.wc-stn-checkout');
     if (tiles) { return tiles.closest('.tzp-card') || tiles; }
@@ -51,9 +51,9 @@ const FIND = {
   bundleWrap: () => document.querySelector('.woosb-wrap'),
 };
 
-// slug, path, device, frame: 'viewport' | { anchor, left?, w, h, dx, dy } (wycinek w px CSS względem elementu
-// anchor; left = element, od którego liczyć lewą krawędź, domyślnie anchor; w: 'full' = cała szerokość),
-// scroll: element, do którego przewinąć ekran (telefon/tablet), action: 'popup' | 'sticky', cart, only, note.
+// slug, path, device, frame: 'viewport' | { anchor, left?, w, h, dx, dy } (crop in CSS px relative to the anchor
+// element; left = element to measure the left edge from, defaults to anchor; w: 'full' = full width),
+// scroll: element to scroll the viewport to (phone/tablet), action: 'popup' | 'sticky', cart, only, note.
 const VIEWS = [
   { slug: 'hero', path: '/', device: 'desktop', frame: 'viewport', note: 'Strona główna: belka o wysyłce nad nagłówkiem.' },
   { slug: 'popup', path: '/', device: 'desktop', frame: 'viewport', action: 'popup', note: 'Przed: sama strona główna. Po: popup "Dlaczego wysyłamy tylko 2 razy w tygodniu?" z najbliższym terminem.' },
@@ -141,7 +141,7 @@ async function capture(browser, side, view) {
     if (view.frame === 'viewport') {
       await page.screenshot({ path: file });
     } else {
-      // Wycinek: przezroczysty element w miejscu kadru, zrzut tego elementu (Puppeteer sam przewija i przycina).
+      // Crop: a transparent element over the frame area, then a screenshot of that element (Puppeteer scrolls and clips by itself).
       const f = view.frame;
       const box = await page.evaluate((anchorFn, leftFn, frame) => {
         const get = (fn) => (fn ? new Function('return (' + fn + ')()')() : null);

@@ -1,6 +1,6 @@
-// Uruchomienie: PPTR_DIR="katalog/z/node_modules" node .claude/tests/shipping-bar-e2e.js (puppeteer-core 23.11.1, zainstalowany Chrome).
-// Test belki o wysyłce (wtyczka tezapiekanki, includes/class-shipping-bar.php) i popupu Woodmarta z terminami.
-// Bez zamówień: checkout sprawdzany z produktem w koszyku w osobnym kontekście. Zrzuty: %TEMP%\tzp-bar-e2e.
+// Usage: PPTR_DIR="katalog/z/node_modules" node .claude/tests/shipping-bar-e2e.js (puppeteer-core 23.11.1, installed Chrome).
+// Test of the shipping bar (tezapiekanki plugin, includes/class-shipping-bar.php) and the Woodmart popup with delivery dates.
+// No orders: the checkout is checked with a product in the cart in a separate context. Screenshots: %TEMP%\tzp-bar-e2e.
 const path = require('path');
 const puppeteer = require(process.env.PPTR_DIR ? path.join(process.env.PPTR_DIR, 'node_modules', 'puppeteer-core') : 'puppeteer-core');
 const OUT = path.join(require('os').tmpdir(), 'tzp-bar-e2e');
@@ -64,7 +64,7 @@ const popupState = (page) => page.evaluate(() => {
     return { ctx, page };
   };
 
-  // 1. Desktop: belka nad nagłówkiem, popup.
+  // 1. Desktop: bar above the header, popup.
   {
     const { ctx, page } = await open('/', DESKTOP);
     let s = await barState(page);
@@ -92,7 +92,7 @@ const popupState = (page) => page.evaluate(() => {
     await page.keyboard.press('Escape');
     await sleep(900);
 
-    // Zamknięcie belki do końca dnia.
+    // Closing the bar until the end of the day.
     await page.click('.tzp-bar__close');
     await sleep(500);
     s = await barState(page);
@@ -101,7 +101,7 @@ const popupState = (page) => page.evaluate(() => {
     ok('desktop: X chowa belkę', !s.shown && s.off && s.headerTop === 0, `nagłówek top ${s.headerTop}`);
     ok('desktop: zapisana dzisiejsza data', stored === `${today.year}-${today.month}-${today.day}`, stored);
 
-    // Po przeładowaniu klasa jest ustawiona już przez skrypt w <head> (bez mignięcia).
+    // After a reload the class is already set by the script in <head> (no flicker).
     await page.evaluateOnNewDocument(() => {
       document.addEventListener('DOMContentLoaded', () => { window.__tzpOffAtDCL = document.documentElement.classList.contains('tzp-bar-off'); });
     });
@@ -110,13 +110,13 @@ const popupState = (page) => page.evaluate(() => {
     const offAtDCL = await page.evaluate(() => window.__tzpOffAtDCL);
     ok('desktop: po przeładowaniu belka nadal zamknięta', !s.shown && offAtDCL === true);
 
-    // Następny dzień: wpis z wczoraj nie chowa belki.
+    // Next day: yesterday's entry does not hide the bar.
     await page.evaluate(() => localStorage.setItem('tzp_bar_closed', '2020-01-01'));
     await page.reload({ waitUntil: 'networkidle2' });
     s = await barState(page);
     ok('desktop: następnego dnia belka wraca', s.shown);
 
-    // Przewijanie: przyklejony nagłówek na górze ekranu.
+    // Scrolling: sticky header at the top of the screen.
     await page.goto(BASE + '/', { waitUntil: 'networkidle2', timeout: 120000 });
     await page.evaluate(() => window.scrollTo(0, 900));
     await sleep(500);
@@ -132,7 +132,7 @@ const popupState = (page) => page.evaluate(() => {
     await ctx.close();
   }
 
-  // 2. Karta produktu (desktop i telefon).
+  // 2. Product page (desktop and phone).
   for (const [name, vp] of [['desktop', DESKTOP], ['telefon', PHONE]]) {
     const { ctx, page } = await open('/zapiekanka-tradycyjna/', vp);
     const s = await barState(page);
@@ -141,7 +141,7 @@ const popupState = (page) => page.evaluate(() => {
     await ctx.close();
   }
 
-  // 3. Telefon i tablet: wygląd, popup na całą szerokość.
+  // 3. Phone and tablet: look, full-width popup.
   for (const [name, vp] of [['telefon', PHONE], ['tablet', TABLET], ['320px', SMALL]]) {
     const { ctx, page } = await open('/', vp);
     const s = await barState(page);
@@ -158,7 +158,7 @@ const popupState = (page) => page.evaluate(() => {
     await ctx.close();
   }
 
-  // 4. Checkout: bez belki i bez popupu.
+  // 4. Checkout: no bar and no popup.
   {
     const ctx = await browser.createBrowserContext();
     const { page } = await open('/?add-to-cart=274', DESKTOP, ctx);

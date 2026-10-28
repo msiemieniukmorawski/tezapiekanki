@@ -1,16 +1,16 @@
-# TeZapiekanki: repozytorium własnego kodu w katalogu WordPressa.
+# TeZapiekanki: repository of our own code inside the WordPress directory.
 #
-# Biała lista: ignorujemy wszystko (rdzeń WP, Woodmart, cudze wtyczki,
-# uploads, cache, backupy, wp-config.php z hasłami), a dopuszczamy tylko
-# kod i dokumentację, które sami zmieniamy.
+# Whitelist: ignore everything (WP core, Woodmart, third-party plugins,
+# uploads, cache, backups, wp-config.php with credentials) and allow only
+# the code and docs we change ourselves.
 #
-# Wtyczka `tezapiekanki` ma własne repozytorium (wp-content/plugins/tezapiekanki/.git),
-# więc tu jej nie śledzimy. Gdyby dodać ją tutaj, git zapisałby ją jako puste
-# "embedded repository" bez plików.
+# The `tezapiekanki` plugin has its own repository (wp-content/plugins/tezapiekanki/.git),
+# so it is not tracked here. Adding it would store it as an empty
+# "embedded repository" without files.
 
 /*
 
-# Dokumentacja projektu i testy E2E
+# Project docs and E2E tests
 !/.gitignore
 !/.gitattributes
 !/CLAUDE.md
@@ -19,23 +19,23 @@
 !/.claude/doc/
 !/.claude/tests/
 /.claude/settings.local.json
-# stara kopia wtyczki z własnym .git (aktualna jest w wp-content/plugins)
+# old copy of the plugin with its own .git (the current one is in wp-content/plugins)
 /.claude/doc/wc-ship-today-notice/
 
 !/wp-content/
 /wp-content/*
 
-# Motyw potomny
+# Child theme
 !/wp-content/themes/
 /wp-content/themes/*
 !/wp-content/themes/woodmart-child/
 
-# Wtyczka z silnikiem terminów (wcześniej osobne repo, historia w backups/2026-10-28-wc-ship-today-notice-git)
+# Delivery schedule plugin (formerly a separate repo, history in backups/2026-10-28-wc-ship-today-notice-git)
 !/wp-content/plugins/
 /wp-content/plugins/*
 !/wp-content/plugins/wc-ship-today-notice/
 
-# Śmieci systemowe i edytora
+# OS and editor files
 .DS_Store
 Thumbs.db
 desktop.ini

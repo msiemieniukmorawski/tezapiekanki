@@ -1,11 +1,11 @@
 <?php
 /**
- * Galeria na karcie produktu (layout Woodmarta 6480, widget galerii z klasą CSS "tzp-gallery").
+ * Gallery on the product page (Woodmart layout 6480, gallery widget with CSS class "tzp-gallery").
  *
- * Układ robią ustawienia Woodmarta ("Bottom grid": duże pierwsze zdjęcie, pod nim 2 kolumny; karuzela na telefonie;
- * lightbox "popup"). js/product-gallery.js: przycisk "Zobacz więcej zdjęć" / "Zwiń zdjęcia" pod siatką przy więcej
- * niż 6 zdjęciach (desktop, tablet) i licznik "1 / 8" (telefon). Kafelki 4:3, zwinięcie do dużego + 4 kafelków
- * i wystające kolejne zdjęcie są w style.css (sekcja "Galeria produktu").
+ * The layout comes from Woodmart settings ("Bottom grid": large first image, 2 columns below; carousel on mobile;
+ * "popup" lightbox). js/product-gallery.js: "Zobacz więcej zdjęć" / "Zwiń zdjęcia" button below the grid when there
+ * are more than 6 images (desktop, tablet) and a "1 / 8" counter (mobile). 4:3 tiles, collapsing to the large image + 4 tiles
+ * and the peeking next image are in style.css (section "Product gallery").
  */
 
 defined( 'ABSPATH' ) || exit;

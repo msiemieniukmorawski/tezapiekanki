@@ -2,20 +2,20 @@
 /**
  * Woodmart Child - TeZapiekanki.
  *
- * Kod sklepu, który wcześniej siedział w functions.php motywu Woodmart
- * i zniknąłby przy aktualizacji motywu.
+ * Shop code that used to live in the Woodmart theme's functions.php
+ * and would have been lost on a theme update.
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Styl motywu potomnego, ładowany po stylach Woodmarta.
- * Starszy CSS sklepu jest nadal w Customizer → Dodatkowy CSS.
+ * Child theme stylesheet, loaded after Woodmart's styles.
+ * Older shop CSS is still in Customizer → Additional CSS.
  */
 function woodmart_child_enqueue_styles() {
 	$file = get_stylesheet_directory() . '/style.css';
 
-	// Wersja = data zmiany pliku, żeby po aktualizacji przeglądarki i LiteSpeed nie trzymały starego CSS.
+	// Version = file modification time, so browsers and LiteSpeed don't keep stale CSS after an update.
 	wp_register_style( 'child-style', get_stylesheet_directory_uri() . '/style.css', array( 'woodmart-style' ), (string) filemtime( $file ) );
 	wp_style_add_data( 'child-style', 'path', $file );
 

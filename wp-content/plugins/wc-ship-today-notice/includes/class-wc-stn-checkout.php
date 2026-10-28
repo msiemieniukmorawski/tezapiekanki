@@ -1,12 +1,12 @@
 <?php
 /**
- * Moduł "Wybór terminu w checkoucie".
+ * "Checkout slot picker" module.
  *
- * Kafelki z najbliższymi terminami z silnika, walidacja w chwili złożenia zamówienia,
- * zapis w zamówieniu (HPOS), wyświetlanie w podsumowaniu, mailach, panelu zamówienia i na liście zamówień.
- * Opcjonalnie wyłącza Iconic Delivery Slots w koszyku i checkoucie (okres przejściowy).
+ * Tiles with the next slots from the engine, validation when the order is placed,
+ * saving to the order (HPOS), display in the order review, emails, order edit screen and order list.
+ * Optionally disables Iconic Delivery Slots in the cart and checkout (transition period).
  *
- * Hooki rejestruje tylko, gdy moduł jest włączony w ustawieniach.
+ * Registers hooks only when the module is enabled in the settings.
  */
 
 if (!defined('ABSPATH')) {
@@ -47,14 +47,14 @@ final class WC_STN_Checkout
         add_action('woocommerce_after_checkout_validation', [$this, 'validate'], 10, 2);
         add_action('woocommerce_checkout_create_order', [$this, 'save_to_order'], 10, 2);
 
-        // Po złożeniu zamówienia: thank you, maile, Moje konto
+        // After the order is placed: thank you page, emails, My Account
         add_filter('woocommerce_get_order_item_totals', [$this, 'order_item_totals'], 20, 2);
 
-        // Panel zamówienia
+        // Order edit screen
         add_action('woocommerce_admin_order_data_after_shipping_address', [$this, 'admin_order_box']);
         add_action('woocommerce_process_shop_order_meta', [$this, 'admin_order_save'], 20, 2);
 
-        // Lista zamówień: HPOS i stara tabela postów
+        // Order list: HPOS and the legacy posts table
         add_filter('manage_woocommerce_page_wc-orders_columns', [$this, 'list_columns'], 20);
         add_action('manage_woocommerce_page_wc-orders_custom_column', [$this, 'list_column_content'], 20, 2);
         add_filter('manage_woocommerce_page_wc-orders_sortable_columns', [$this, 'list_sortable_columns']);
@@ -66,7 +66,7 @@ final class WC_STN_Checkout
         add_filter('request', [$this, 'legacy_list_request']);
         add_action('restrict_manage_posts', [$this, 'legacy_filter_dropdown'], 20);
 
-        // Okres przejściowy: Iconic aktywny, ale nie działa w koszyku i checkoucie
+        // Transition period: Iconic stays active but does not run in the cart and checkout
         if (!empty($o['disable_iconic'])) {
             add_action('wp_loaded', [$this, 'disable_iconic_checkout'], 99);
             add_action('wp_enqueue_scripts', [$this, 'dequeue_iconic_assets'], 999);
@@ -79,7 +79,7 @@ final class WC_STN_Checkout
     }
 
     /* ---------------------------------------------------------
-     * Checkout: pole
+     * Checkout: field
      * --------------------------------------------------------- */
 
     public function shortcode()
@@ -97,7 +97,7 @@ final class WC_STN_Checkout
     }
 
     /**
-     * Kafelki z najbliższymi terminami + dane dla JS (dokładanie kolejnych terminów, gdy godzina graniczna minie).
+     * Tiles with the next slots + data for JS (adding further slots when a cutoff time passes).
      */
     private function render_field()
     {
@@ -203,11 +203,11 @@ final class WC_STN_Checkout
     }
 
     /**
-     * Data z formularza: przy składaniu zamówienia z $_POST, przy odświeżaniu podsumowania z post_data.
+     * Date from the form: from $_POST when placing the order, from post_data when the order review refreshes.
      */
     private function posted_ship_date()
     {
-        // phpcs:disable WordPress.Security.NonceVerification -- WooCommerce weryfikuje nonce checkoutu.
+        // phpcs:disable WordPress.Security.NonceVerification -- WooCommerce verifies the checkout nonce.
         $value = '';
 
         if (isset($_POST[self::FIELD])) {
@@ -224,7 +224,7 @@ final class WC_STN_Checkout
     }
 
     /**
-     * Termin (z silnika) dla daty wysyłki, o ile jego godzina graniczna jeszcze nie minęła.
+     * Slot (from the engine) for a shipping date, as long as its cutoff time has not passed yet.
      */
     public function find_slot($ship_ymd, ?DateTimeImmutable $now = null)
     {
@@ -238,7 +238,7 @@ final class WC_STN_Checkout
     }
 
     /**
-     * Wiersz w tabeli podsumowania zamówienia (odświeżany razem z nią przez update_checkout).
+     * Row in the order review table (refreshed together with it by update_checkout).
      */
     public function review_row()
     {
@@ -308,11 +308,11 @@ final class WC_STN_Checkout
     }
 
     /* ---------------------------------------------------------
-     * Po złożeniu zamówienia
+     * After the order is placed
      * --------------------------------------------------------- */
 
     /**
-     * Thank you page, maile (klient i admin), Moje konto.
+     * Thank you page, emails (customer and admin), My Account.
      */
     public function order_item_totals($rows, $order)
     {
@@ -427,7 +427,7 @@ final class WC_STN_Checkout
     }
 
     /* ---------------------------------------------------------
-     * Lista zamówień
+     * Order list
      * --------------------------------------------------------- */
 
     public function list_columns($columns)
@@ -469,7 +469,7 @@ final class WC_STN_Checkout
             return;
         }
 
-        // Zamówienia sprzed przełączenia: data z Iconic, tylko do wglądu (bez migracji).
+        // Orders from before the switch: date from Iconic, display only (no migration).
         $iconic = (string) $order->get_meta('jckwds_date_ymd');
         if (preg_match('/^(\d{4})(\d{2})(\d{2})$/', $iconic, $m)) {
             echo esc_html($this->date_short($schedule->date("{$m[1]}-{$m[2]}-{$m[3]}"))) . '<br><small>Iconic</small>';
@@ -483,11 +483,11 @@ final class WC_STN_Checkout
     }
 
     /**
-     * HPOS: sortowanie po dacie wysyłki (nazwana klauzula meta_query) i filtr po dniu.
+     * HPOS: sorting by shipping date (named meta_query clause) and filtering by day.
      */
     public function list_query_args($args)
     {
-        // phpcs:disable WordPress.Security.NonceVerification -- parametry listy w panelu, tylko odczyt.
+        // phpcs:disable WordPress.Security.NonceVerification -- admin list parameters, read-only.
         $orderby = isset($_GET['orderby']) ? sanitize_key(wp_unslash($_GET['orderby'])) : '';
         $filter  = isset($_GET[self::FILTER_PARAM]) ? sanitize_text_field(wp_unslash($_GET[self::FILTER_PARAM])) : '';
         // phpcs:enable
@@ -545,7 +545,7 @@ final class WC_STN_Checkout
     }
 
     /**
-     * Stara tabela postów (sklepy bez HPOS).
+     * Legacy posts table (shops without HPOS).
      */
     public function legacy_list_request($vars)
     {
@@ -567,13 +567,13 @@ final class WC_STN_Checkout
     }
 
     /* ---------------------------------------------------------
-     * Okres przejściowy: wyłączenie Iconic w koszyku i checkoucie
+     * Transition period: disabling Iconic in the cart and checkout
      * --------------------------------------------------------- */
 
     /**
-     * Iconic rejestruje hooki na wp_loaded (10), my zdejmujemy je na wp_loaded (99), także dla AJAX checkoutu.
-     * Sprawdzone na Iconic 2.13.0. Sam filtr iconic_wds_delivery_slots_allowed nie wystarcza:
-     * Checkout::checkout_fields dodaje wymagane pole "jckwds" bez sprawdzania tego filtra.
+     * Iconic registers its hooks on wp_loaded (10), we remove them on wp_loaded (99), also for checkout AJAX.
+     * Verified on Iconic 2.13.0. The iconic_wds_delivery_slots_allowed filter alone is not enough:
+     * Checkout::checkout_fields adds the required "jckwds" field without checking that filter.
      */
     public function disable_iconic_checkout()
     {
@@ -603,7 +603,7 @@ final class WC_STN_Checkout
     }
 
     /* ---------------------------------------------------------
-     * Formatowanie dat
+     * Date formatting
      * --------------------------------------------------------- */
 
     private function date_short(DateTimeImmutable $d)

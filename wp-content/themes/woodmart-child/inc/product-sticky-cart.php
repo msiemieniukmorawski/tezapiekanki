@@ -1,11 +1,11 @@
 <?php
 /**
- * Pasek "Dodaj do koszyka" przy przewijaniu karty produktu.
+ * Sticky "Add to cart" bar shown while scrolling the product page.
  *
- * Pasek jest natywny z Woodmarta (opcje single_sticky_add_to_cart i mobile_single_sticky_add_to_cart, renderuje
- * go woodmart_sticky_single_add_to_cart() na końcu strony, niezależnie od layoutu Elementora). Na telefonie zostaje
- * natywny wygląd (ilość + przycisk, decyzja z 18.10). Tu tylko poprawka dla zestawów (WPC Bundles, typ woosb),
- * dla których przycisk w pasku nic nie robił: js/product-sticky-cart.js.
+ * The bar is Woodmart's native one (options single_sticky_add_to_cart and mobile_single_sticky_add_to_cart, rendered
+ * by woodmart_sticky_single_add_to_cart() at the end of the page, independently of the Elementor layout). On mobile it keeps
+ * the native look (quantity + button, decided 2026-10-18). This file only fixes bundles (WPC Bundles, type woosb),
+ * for which the bar button did nothing: js/product-sticky-cart.js.
  */
 
 defined( 'ABSPATH' ) || exit;

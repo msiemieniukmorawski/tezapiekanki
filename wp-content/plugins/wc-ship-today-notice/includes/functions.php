@@ -1,8 +1,8 @@
 <?php
 /**
- * Publiczne API dla innych wtyczek i motywu.
+ * Public API for other plugins and the theme.
  *
- * Daty jako Y-m-d w strefie czasowej sklepu.
+ * Dates as Y-m-d in the shop's time zone.
  */
 
 if (!defined('ABSPATH')) {
@@ -10,26 +10,26 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Najbliższe terminy, których godzina graniczna jeszcze nie minęła.
+ * Next slots whose cutoff time has not passed yet.
  *
- * @param int                    $count Ile terminów.
- * @param DateTimeInterface|null $now   Inna chwila niż "teraz" (testy).
+ * @param int                    $count Number of slots.
+ * @param DateTimeInterface|null $now   A moment other than "now" (tests).
  * @return array<int,array{cutoff:DateTimeImmutable,ship:DateTimeImmutable,delivery:?DateTimeImmutable}>
  */
 function wc_stn_get_slots($count = 1, $now = null)
 {
     if ($now instanceof DateTime) {
-        $now = DateTimeImmutable::createFromMutable($now); // PHP 7.4 nie ma createFromInterface().
+        $now = DateTimeImmutable::createFromMutable($now); // PHP 7.4 has no createFromInterface().
     }
 
     return WC_Ship_Today_Notice::instance()->schedule()->slots((int) $count, $now);
 }
 
 /**
- * Data dostawy dla daty wysyłki (np. wybranej w kalendarzu w checkoucie).
+ * Delivery date for a shipping date (e.g. one picked in the checkout calendar).
  *
- * @param string $ship_ymd Data wysyłki Y-m-d (przyjmuje też Ymd).
- * @return string|null Y-m-d albo null, gdy dostawa jest wyłączona w ustawieniach.
+ * @param string $ship_ymd Shipping date Y-m-d (Ymd is accepted too).
+ * @return string|null Y-m-d, or null when delivery is disabled in the settings.
  */
 function wc_stn_delivery_for_ship_date($ship_ymd)
 {
@@ -50,7 +50,7 @@ function wc_stn_delivery_for_ship_date($ship_ymd)
 }
 
 /**
- * Czy w danym dniu nie ma wysyłki z powodu święta albo daty wykluczonej (bez względu na dzień tygodnia).
+ * Whether there is no shipping on the given day because of a holiday or an excluded date (regardless of weekday).
  */
 function wc_stn_is_blocked_date($ymd)
 {
@@ -58,7 +58,7 @@ function wc_stn_is_blocked_date($ymd)
 }
 
 /**
- * Czy dany dzień jest dniem wysyłki (dzień tygodnia z ustawień, nie święto, nie data wykluczona).
+ * Whether the given day is a shipping day (weekday from the settings, not a holiday, not an excluded date).
  */
 function wc_stn_is_shipping_day($ymd)
 {

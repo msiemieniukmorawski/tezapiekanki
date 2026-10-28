@@ -1,6 +1,6 @@
 /**
- * WooCommerce Ship Today Notice: wybór terminu w checkoucie.
- * Kolor: ustawienie "Kolor zaznaczenia" albo zmienna --wc-stn-accent w motywie.
+ * WooCommerce Ship Today Notice: checkout slot picker.
+ * Color: the "Kolor zaznaczenia" (selection color) setting or the --wc-stn-accent variable in the theme.
  */
 
 .wc-stn-checkout {
@@ -61,7 +61,7 @@
   box-shadow: inset 0 0 0 1px var(--wc-stn-accent, #333);
 }
 
-/* Radio ukryte wizualnie, ale dostępne z klawiatury i dla czytników ekranu. */
+/* Radio visually hidden, but reachable by keyboard and screen readers. */
 .wc-stn-tile__input {
   position: absolute;
   width: 1px;

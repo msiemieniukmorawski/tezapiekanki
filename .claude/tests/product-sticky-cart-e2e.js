@@ -1,6 +1,6 @@
-// Uruchomienie: PPTR_DIR="katalog/z/node_modules" node .claude/tests/product-sticky-cart-e2e.js (puppeteer-core 23.11.1, zainstalowany Chrome).
-// Test paska "Dodaj do koszyka" przy przewijaniu (Woodmart + poprawki z inc/product-sticky-cart.php).
-// Dodaje produkty do koszyka w osobnych kontekstach przeglądarki (bez zamówień). Zrzuty: %TEMP%\tzp-sticky-e2e.
+// Usage: PPTR_DIR="katalog/z/node_modules" node .claude/tests/product-sticky-cart-e2e.js (puppeteer-core 23.11.1, installed Chrome).
+// Test of the sticky "Dodaj do koszyka" bar on scroll (Woodmart + fixes from inc/product-sticky-cart.php).
+// Adds products to the cart in separate browser contexts (no orders). Screenshots: %TEMP%\tzp-sticky-e2e.
 const path = require('path');
 const puppeteer = require(process.env.PPTR_DIR ? path.join(process.env.PPTR_DIR, 'node_modules', 'puppeteer-core') : 'puppeteer-core');
 const OUT = path.join(require('os').tmpdir(), 'tzp-sticky-e2e');
@@ -57,7 +57,7 @@ const sticky = (page) => page.evaluate(() => {
   await page.screenshot({ path: path.join(OUT, 'desk-po-dodaniu.png') });
   await ctx.close();
 
-  // 2. Telefon, zapiekanka
+  // 2. Phone, zapiekanka
   ({ ctx, page } = await open('zapiekanka-kebab', { width: 390, height: 844, isMobile: true, hasTouch: true }));
   await page.evaluate(() => window.scrollTo(0, 3000));
   await sleep(800);
@@ -87,7 +87,7 @@ const sticky = (page) => page.evaluate(() => {
   ok('telefon: dotknięcie "Dodaj do koszyka" dodaje produkt', after === before + 1, `${before} -> ${after}`);
   await ctx.close();
 
-  // 3. Zestaw 9: "Wybierz smaki" przewija do listy, po skompletowaniu dodaje zestaw
+  // 3. Bundle of 9: "Wybierz smaki" scrolls to the list, once complete it adds the bundle
   ({ ctx, page } = await open('zestaw-9-zapiekanek', { width: 1440, height: 900 }));
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight * 0.6));
   await sleep(800);
@@ -97,7 +97,7 @@ const sticky = (page) => page.evaluate(() => {
   await sleep(1500);
   const pos = await page.evaluate(() => ({ list: Math.round(document.querySelector('.woosb-wrap').getBoundingClientRect().top), header: Math.round(document.querySelector('.whb-main-header').getBoundingClientRect().bottom), url: location.pathname }));
   ok('zestaw: "Wybierz smaki" przewija do listy smaków, poniżej przyklejonego nagłówka', pos.list >= pos.header && pos.list < 300, JSON.stringify(pos));
-  // Wybór 9 sztuk jednego smaku tak, jak robi to klient (pole ilości przy smaku).
+  // Picking 9 pieces of one flavour the way a customer does (the quantity field next to the flavour).
   await page.evaluate(() => {
     const input = [...document.querySelectorAll('.woosb-wrap .woosb-product input.qty, .woosb-wrap input.qty')].find((i) => !i.disabled);
     input.value = 9;

@@ -1,27 +1,27 @@
 /**
- * Galeria produktu (inc/product-gallery.php).
+ * Product gallery (inc/product-gallery.php).
  *
- * - Desktop i tablet: przy więcej niż 6 zdjęciach widać duże + 4 kafelki (CSS chowa resztę od razu),
- *   przycisk "Zobacz więcej zdjęć" pod siatką rozwija resztę w dół i zwija z powrotem.
- * - Telefon: licznik "1 / 8" w karuzeli. Karuzelę tworzy Woodmart (js/scripts/wc/productImagesGallery.js)
- *   na window load i tylko tam, gdzie jest włączona (u nas telefon). Instancja Swipera jest w element.swiper.
+ * - Desktop and tablet: with more than 6 images, the large one + 4 tiles are visible (CSS hides the rest right away);
+ *   the "Zobacz więcej zdjęć" button below the grid expands the rest downwards and collapses it back.
+ * - Mobile: "1 / 8" counter in the carousel. The carousel is created by Woodmart (js/scripts/wc/productImagesGallery.js)
+ *   on window load and only where it is enabled (here: mobile). The Swiper instance is in element.swiper.
  */
 (function () {
   'use strict';
 
-  var MAX_ALL = 6; // do tylu zdjęć pokazujemy wszystkie
-  var SHOWN = 5; // przy większej liczbie: duże + 4 kafelki (w CSS :nth-child(n+6))
+  var MAX_ALL = 6; // up to this many images, all are shown
+  var SHOWN = 5; // with more: large + 4 tiles (in CSS :nth-child(n+6))
   var GRID_QUERY = '(min-width: 769px)';
 
   function galleries() {
     return document.querySelectorAll('.tzp-gallery .woocommerce-product-gallery__wrapper');
   }
 
-  /* ---------- Desktop i tablet: "Zobacz więcej zdjęć" pod siatką ---------- */
+  /* ---------- Desktop and tablet: "Zobacz więcej zdjęć" below the grid ---------- */
 
   var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Płynna zmiana wysokości siatki między dwoma stanami (rozwinięcie w dół, zwinięcie w górę).
+  // Smooth grid height transition between the two states (expand downwards, collapse upwards).
   function animateHeight(el, from, to, done) {
     if (reducedMotion || from === to) {
       done();
@@ -30,7 +30,7 @@
 
     el.style.overflow = 'hidden';
     el.style.height = from + 'px';
-    el.getBoundingClientRect(); // wymusza przeliczenie przed startem przejścia
+    el.getBoundingClientRect(); // forces a reflow before the transition starts
     el.style.transition = 'height 0.35s ease';
     el.style.height = to + 'px';
 
@@ -52,7 +52,7 @@
         finish();
       }
     });
-    setTimeout(finish, 600); // gdyby transitionend nie przyszedł
+    setTimeout(finish, 600); // in case transitionend never fires
   }
 
   function setupToggle(gallery) {
@@ -99,12 +99,12 @@
         return;
       }
 
-      // Zwijanie: wysokość do dolnej krawędzi ostatniego widocznego kafelka, potem chowamy resztę.
+      // Collapsing: height down to the bottom edge of the last visible tile, then hide the rest.
       var to = Math.round(items[SHOWN - 1].getBoundingClientRect().bottom - container.getBoundingClientRect().top);
       setLabel(false);
       animateHeight(container, from, to, function () {
         wrapper.classList.remove('tzp-gallery--expanded');
-        // Przycisk podjechał do góry: jeśli zniknął z ekranu, wracamy do niego.
+        // The button moved up: if it went off screen, scroll back to it.
         if (button.getBoundingClientRect().top < 0) {
           button.scrollIntoView({ block: 'center', behavior: reducedMotion ? 'auto' : 'smooth' });
         }
@@ -114,7 +114,7 @@
     container.insertAdjacentElement('afterend', button);
   }
 
-  /* ---------- Telefon: licznik ---------- */
+  /* ---------- Mobile: counter ---------- */
 
   function setupCounter(gallery) {
     var swiper = gallery.swiper;
@@ -125,7 +125,7 @@
       return;
     }
 
-    // Swiper sam ogłasza slajdy czytnikom ekranu (a11y), licznik jest tylko wizualny.
+    // Swiper announces slides to screen readers itself (a11y); the counter is visual only.
     var counter = document.createElement('div');
     counter.className = 'tzp-gallery__counter';
     counter.setAttribute('aria-hidden', 'true');
@@ -150,7 +150,7 @@
       }
     });
 
-    // Przy "auto height" Woodmart czeka jeszcze na załadowanie zdjęć, więc kilka krótkich prób.
+    // With "auto height" Woodmart also waits for images to load, so retry a few times briefly.
     if (waiting && attempt < 10) {
       setTimeout(function () {
         initCounters(attempt + 1);

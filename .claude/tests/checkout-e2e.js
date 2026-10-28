@@ -1,11 +1,11 @@
-// Test E2E checkoutu (wariant B) na kopii lokalnej http://tezapiekanki.local. Opis w CLAUDE.md, sekcja 8 "Układ checkoutu".
+// E2E test of the checkout (variant B) on the local copy http://tezapiekanki.local. Described in CLAUDE.md, section 8 "Układ checkoutu".
 //
-// Uruchomienie:
-//   1. raz: w dowolnym katalogu `npm i puppeteer-core@23.11.1` (używa zainstalowanego Chrome),
-//   2. włącz BACS: wp eval '$b = get_option("woocommerce_bacs_settings"); $b["enabled"] = "yes"; update_option("woocommerce_bacs_settings", $b);'
+// Usage:
+//   1. once: in any directory `npm i puppeteer-core@23.11.1` (uses the installed Chrome),
+//   2. enable BACS: wp eval '$b = get_option("woocommerce_bacs_settings"); $b["enabled"] = "yes"; update_option("woocommerce_bacs_settings", $b);'
 //   3. PPTR_DIR="ścieżka/do/katalogu/z/node_modules" node .claude/tests/checkout-e2e.js
-//   4. po teście: wyłącz BACS, a zamówienie testowe (test@example.com, numer w e2e-order-id.txt) anuluj i usuń.
-// Zrzuty ekranu i profil przeglądarki: %TEMP%\tzp-checkout-e2e. Każde uruchomienie zaczyna z pustym koszykiem.
+//   4. after the test: disable BACS, and cancel and delete the test order (test@example.com, number in e2e-order-id.txt).
+// Screenshots and browser profile: %TEMP%\tzp-checkout-e2e. Every run starts with an empty cart.
 const path = require('path');
 const fs = require('fs');
 const SCRATCH = path.join(require('os').tmpdir(), 'tzp-checkout-e2e');
@@ -44,7 +44,7 @@ async function clickAndWait(page, selector) {
     const page = await browser.newPage();
     page.setDefaultTimeout(90000);
     const jsErrors = [];
-    // CookieYes zgłasza błąd, bo domena tezapiekanki.local nie jest u nich zarejestrowana (tylko lokalnie).
+    // CookieYes reports an error because the domain tezapiekanki.local is not registered with them (local only).
     page.on('pageerror', (e) => { if (!/cookieyes/i.test(e.message)) jsErrors.push(e.message); });
     await page.setViewport({ width: 1300, height: 900 });
 
@@ -53,7 +53,7 @@ async function clickAndWait(page, selector) {
     await page.waitForSelector('.tzp-method');
     await new Promise((r) => setTimeout(r, 1500));
 
-    // 1. Stan początkowy
+    // 1. Initial state
     let s = await page.evaluate(() => ({
       tiles: document.querySelectorAll('.tzp-method').length,
       checkedTile: (document.querySelector('.tzp-method.is-checked .tzp-method__name') || {}).textContent,
@@ -66,7 +66,7 @@ async function clickAndWait(page, selector) {
     ok('start: przycisk paczkomatu i 6 kafelków terminu', s.parcelBtn && s.termTiles === 6, `termTiles=${s.termTiles}`);
     ok('start: przycisk z kwotą', /Kupuję i płacę · 39,99/.test(s.button || ''), s.button);
 
-    // 2. Kurier
+    // 2. Courier
     await clickAndWait(page, 'label.tzp-method[for$="single12"]');
     s = await page.evaluate(() => ({
       native: (document.querySelector('input[name="shipping_method[0]"]:checked') || {}).value,
@@ -77,7 +77,7 @@ async function clickAndWait(page, selector) {
     ok('klik Kurier: oryginalne pole i kafelek przełączone', s.native === 'flexible_shipping_single:12' && s.checkedTile === 'InPost Kurier', JSON.stringify(s));
     ok('klik Kurier: bez przycisku paczkomatu, podsumowanie pokazuje Kuriera', !s.parcelBtn && /Kurier/.test(s.summary || ''), (s.summary || '').trim());
 
-    // 3. Paczkomat i mapa Apaczki
+    // 3. Parcel locker and the Apaczka map
     await clickAndWait(page, 'label.tzp-method[for$="single10"]');
     s = await page.evaluate(() => ({ native: (document.querySelector('input[name="shipping_method[0]"]:checked') || {}).value, parcelBtn: !!document.querySelector('.tzp-parcel__button') }));
     ok('powrót na Paczkomat: przycisk paczkomatu wraca', s.native === 'flexible_shipping_single:10' && s.parcelBtn, JSON.stringify(s));
@@ -90,21 +90,21 @@ async function clickAndWait(page, selector) {
     const modalAfter = await page.evaluate(() => { const m = document.getElementById('apaczka_pl_geowidget_modal_dynamic'); return m ? getComputedStyle(m).display : 'brak'; });
     ok('mapa Apaczki zamyka się krzyżykiem', modalAfter === 'none', `modal display=${modalAfter}`);
 
-    // 4. Faktura na firmę
+    // 4. Company invoice
     s = await page.evaluate(() => ({ hidden: document.getElementById('billing_nazwa_firmy_field').classList.contains('tzp-is-hidden') && document.getElementById('billing_numer_nip_field').classList.contains('tzp-is-hidden') }));
     await page.click('#tzp_want_invoice');
     const shown = await page.evaluate(() => !document.getElementById('billing_nazwa_firmy_field').classList.contains('tzp-is-hidden'));
     ok('faktura: pola firmy ukryte, po zaznaczeniu widoczne', s.hidden && shown);
     await page.click('#tzp_want_invoice');
 
-    // 5. Kupon: zły kod
+    // 5. Coupon: invalid code
     await page.click('.tzp-coupon__box summary');
     await page.type('#tzp_coupon_code', 'NIEMATAKIEGO');
     await clickAndWait(page, '.tzp-coupon__apply');
     s = await page.evaluate(() => ({ open: document.querySelector('.tzp-coupon__box').open, msg: document.querySelector('.tzp-coupon__msg').innerText.trim(), value: document.getElementById('tzp_coupon_code').value }));
     ok('kupon: zły kod pokazuje błąd pod polem, pole zostaje otwarte z wpisanym kodem', s.open && /nie istnieje|nieprawid|not exist/i.test(s.msg) && s.value === 'NIEMATAKIEGO', s.msg);
 
-    // 6. Kupon: dobry kod (Enter nie może wysłać zamówienia)
+    // 6. Coupon: valid code (Enter must not submit the order)
     await page.evaluate(() => { document.getElementById('tzp_coupon_code').value = ''; });
     await page.type('#tzp_coupon_code', 'HEJ10');
     const wait = waitUpdated(page);
@@ -120,12 +120,12 @@ async function clickAndWait(page, selector) {
     ok('kupon HEJ10 przez Enter: rabat w podsumowaniu, bez wysłania zamówienia', s.url === '/zamowienie/' && s.discount, JSON.stringify({ total: s.total, msg: s.msg }));
     ok('kupon: kwota na przycisku zaktualizowana', /37,49/.test(s.button || ''), s.button);
 
-    // 7. Usunięcie kuponu oryginalnym linkiem WooCommerce
+    // 7. Removing the coupon with the original WooCommerce link
     await clickAndWait(page, '.tzp-checkout-side .woocommerce-remove-coupon');
     s = await page.evaluate(() => ({ discount: !!document.querySelector('.tzp-checkout-side .cart-discount'), button: (document.getElementById('place_order') || {}).textContent }));
     ok('usunięcie kuponu oryginalnym linkiem WooCommerce', !s.discount && /39,99/.test(s.button || ''), s.button);
 
-    // 8. Przyklejone podsumowanie
+    // 8. Sticky summary
     await page.evaluate(() => window.scrollTo(0, 1400));
     await new Promise((r) => setTimeout(r, 500));
     const sideTop = await page.evaluate(() => Math.round(document.querySelector('.tzp-checkout-side').getBoundingClientRect().top));
@@ -133,7 +133,7 @@ async function clickAndWait(page, selector) {
     await page.screenshot({ path: path.join(SCRATCH, 'e2e-desk-scrolled.png') });
     await page.evaluate(() => window.scrollTo(0, 0));
 
-    // 9. Zamówienie z Paczkomatem bez wybranego punktu: walidacja Apaczki
+    // 9. Parcel locker order without a selected point: Apaczka validation
     const fill = async (sel, val) => { await page.$eval(sel, (el) => { el.value = ''; }); await page.type(sel, val); };
     await fill('#billing_email', 'test@example.com');
     await fill('#billing_phone', '500600700');
@@ -149,7 +149,7 @@ async function clickAndWait(page, selector) {
     const err = await page.evaluate(() => (document.querySelector('.woocommerce-NoticeGroup-checkout, .woocommerce-error') || {}).innerText || '');
     ok('Paczkomat bez punktu: zamówienie zablokowane walidacją Apaczki', /paczkomat|parcel|punkt/i.test(err), err.replace(/\s+/g, ' ').trim().slice(0, 120));
 
-    // 10. Kurier: zamówienie przechodzi (najpierw znika nakładka blockUI po błędzie)
+    // 10. Courier: the order goes through (first the blockUI overlay disappears after the error)
     await page.waitForFunction(() => !document.querySelector('.blockUI'), { timeout: 30000 });
     await new Promise((r) => setTimeout(r, 800));
     await page.$eval('label.tzp-method[for$="single12"]', (el) => el.scrollIntoView({ block: 'center' }));
@@ -178,7 +178,7 @@ async function clickAndWait(page, selector) {
 
     ok('brak błędów JS na stronie', jsErrors.length === 0, jsErrors.slice(0, 3).join(' | '));
 
-    // 11. Telefon
+    // 11. Phone
     const mob = await browser.newPage();
     await mob.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 1 });
     await mob.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1');
@@ -211,7 +211,7 @@ async function clickAndWait(page, selector) {
     ok('telefon: kolejność pasek > kupon > dane > dostawa > termin > przycisk', s.order.every((v, i, a) => i === 0 || v > a[i - 1]), s.order.join(' < '));
     await mob.screenshot({ path: path.join(SCRATCH, 'e2e-mob-top.png'), fullPage: false });
 
-    // Kupon na telefonie bez rozwijania podsumowania
+    // Coupon on the phone without expanding the summary
     await mob.click('.tzp-coupon__box summary');
     await mob.type('#tzp_coupon_code', 'HEJ10');
     const mobWait = waitUpdated(mob);

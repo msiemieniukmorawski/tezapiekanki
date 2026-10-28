@@ -1,6 +1,6 @@
-// Lokalna walidacja danych strukturalnych (JSON-LD) według wymagań Google dla Product / Merchant listings i FAQPage.
-// Rich Results Test nie otworzy kopii lokalnej, więc po wdrożeniu na staging sprawdź jeszcze adresy w Google.
-// Uruchomienie: node .claude/tests/schema-check.js  (bez przeglądarki, Node 18+)
+// Local validation of structured data (JSON-LD) against Google's requirements for Product / Merchant listings and FAQPage.
+// The Rich Results Test cannot open the local copy, so after deploying to staging also check the URLs in Google.
+// Usage: node .claude/tests/schema-check.js  (no browser, Node 18+)
 const BASE = 'http://tezapiekanki.local/';
 const PRODUCTS = ['zapiekanka-tradycyjna', 'zapiekanka-wiejska', 'zapiekanka-z-boczkiem', 'zapiekanka-goralska', 'zapiekanka-mega-serowa', 'zapiekanka-z-szynka', 'zapiekanka-kebab', 'zapiekanka-na-dziko', 'zapiekanka-salami', 'zapiekanka-na-ostro', 'zapiekanka-szwedzka'];
 const results = [];

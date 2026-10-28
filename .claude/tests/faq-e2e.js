@@ -1,7 +1,7 @@
-// Uruchomienie: PPTR_DIR="katalog/z/node_modules" node .claude/tests/faq-e2e.js (puppeteer-core 23.11.1, zainstalowany Chrome).
-// Test FAQ (wtyczka tezapiekanki: includes/class-faq.php, widget "FAQ (zwiń / rozwiń)", includes/class-product-faq.php):
-// strona /faq/ (pełna lista + schema), karta produktu (4 pytania + schema + link), strona główna (4 pytania bez schemy + link).
-// Rozwijanie, jedno otwarte naraz, klawiatura, jedna FAQPage zgodna z treścią. Zrzuty: %TEMP%\tzp-faq-e2e.
+// Usage: PPTR_DIR="katalog/z/node_modules" node .claude/tests/faq-e2e.js (puppeteer-core 23.11.1, installed Chrome).
+// FAQ test (tezapiekanki plugin: includes/class-faq.php, widget "FAQ (zwiń / rozwiń)", includes/class-product-faq.php):
+// the /faq/ page (full list + schema), product page (4 questions + schema + link), home page (4 questions without schema + link).
+// Expanding, one open at a time, keyboard, a single FAQPage matching the content. Screenshots: %TEMP%\tzp-faq-e2e.
 const path = require('path');
 const puppeteer = require(process.env.PPTR_DIR ? path.join(process.env.PPTR_DIR, 'node_modules', 'puppeteer-core') : 'puppeteer-core');
 const OUT = path.join(require('os').tmpdir(), 'tzp-faq-e2e');
@@ -16,7 +16,7 @@ const PHONE = { width: 390, height: 844, isMobile: true, hasTouch: true };
 const state = (page) => page.evaluate(() => [...document.querySelectorAll('.tzp-faq__item')].map((d) => d.open));
 const norm = (s) => s.replace(/\s+/g, ' ').trim();
 
-// Schema FAQPage na stronie + porównanie z widoczną treścią (tekst odpowiedzi ze schemy przez DOM, jak czyta go wyszukiwarka).
+// FAQPage schema on the page + comparison with the visible content (answer text from the schema via the DOM, the way a search engine reads it).
 const schemaInfo = (page) => page.evaluate(() => {
   const blocks = [...document.querySelectorAll('script[type="application/ld+json"]')].map((s) => { try { return JSON.parse(s.textContent); } catch (e) { return { parseError: true }; } });
   const flat = [];
@@ -43,7 +43,7 @@ const schemaInfo = (page) => page.evaluate(() => {
   };
   const schemaMatches = (s) => s.visible.length === s.entities.length && s.visible.every((v, i) => norm(v.q) === norm(s.entities[i].name) && norm(v.a) === norm(s.answers[i]));
 
-  // 1. Strona FAQ (desktop): zachowanie i schema.
+  // 1. FAQ page (desktop): behaviour and schema.
   let page = await open('/faq/', DESKTOP);
   let s = await state(page);
   ok('FAQ: pytań na stronie', s.length >= 8, String(s.length));
@@ -56,7 +56,7 @@ const schemaInfo = (page) => page.evaluate(() => {
   await sleep(400);
   await page.click('.tzp-faq:first-of-type .tzp-faq__item:nth-child(2) > summary');
   await sleep(500);
-  // Kilka pytań naraz (decyzja z 19.10: "jedno otwarte naraz" przesuwało treść na telefonie).
+  // Several questions open at once (decision of 2026-10-19: "one open at a time" shifted the content on the phone).
   const g1 = await page.evaluate(() => [...document.querySelector('.tzp-faq').querySelectorAll('.tzp-faq__item')].map((d) => d.open));
   ok('FAQ: można otworzyć kilka pytań naraz', g1[0] === true && g1[1] === true, JSON.stringify(g1));
   const answerVisible = await page.evaluate(() => { const a = document.querySelector('.tzp-faq .tzp-faq__item:nth-child(2) .tzp-faq__answer'); return a.getBoundingClientRect().height > 20; });
@@ -82,7 +82,7 @@ const schemaInfo = (page) => page.evaluate(() => {
   ok('FAQ: schema po kolejnych odsłonach', (await page.evaluate(() => document.querySelectorAll('script.tzp-faq-schema').length)) === 1);
   await page.close();
 
-  // 2. Karta produktu: 4 pytania, schema, link do FAQ.
+  // 2. Product page: 4 questions, schema, link to the FAQ.
   page = await open('/zapiekanka-salami/', DESKTOP);
   s = await schemaInfo(page);
   ok('produkt: 4 pytania', s.visible.length === 4, String(s.visible.length));
@@ -96,7 +96,7 @@ const schemaInfo = (page) => page.evaluate(() => {
   await page.screenshot({ path: path.join(OUT, '2-produkt-desktop.png') });
   await page.close();
 
-  // 3. Strona główna: 4 pytania bez schemy, link do FAQ.
+  // 3. Home page: 4 questions without schema, link to the FAQ.
   page = await open('/', DESKTOP);
   s = await schemaInfo(page);
   ok('główna: 4 pytania', s.visible.length === 4, String(s.visible.length));
@@ -108,7 +108,7 @@ const schemaInfo = (page) => page.evaluate(() => {
   await page.screenshot({ path: path.join(OUT, '3-glowna-desktop.png') });
   await page.close();
 
-  // 4. Telefon.
+  // 4. Phone.
   for (const [name, url] of [['faq', '/faq/'], ['produkt', '/zapiekanka-salami/']]) {
     page = await open(url, PHONE);
     await page.tap('.tzp-faq__item:nth-child(1) > summary');

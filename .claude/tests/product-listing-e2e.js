@@ -1,6 +1,6 @@
-// Uruchomienie: PPTR_DIR="katalog/z/node_modules" node .claude/tests/<plik>.js (puppeteer-core 23.11.1, zainstalowany Chrome).
-// Zrzuty ekranu: %TEMP%\tzp-gallery-e2e. Nie składa zamówień. Opis galerii: CLAUDE.md, sekcja 7 "Zdjęcia i galeria".
-// Format 1:1 w listingach: sklep, kategoria zestawów, strona główna, "podobne" na karcie produktu.
+// Usage: PPTR_DIR="katalog/z/node_modules" node .claude/tests/<plik>.js (puppeteer-core 23.11.1, installed Chrome).
+// Screenshots: %TEMP%\tzp-gallery-e2e. Places no orders. Gallery description: CLAUDE.md, section 7 "Zdjęcia i galeria".
+// 1:1 format in listings: shop, bundles category, home page, "podobne" (related products) on the product page.
 const path = require('path');
 const puppeteer = require(process.env.PPTR_DIR ? path.join(process.env.PPTR_DIR, 'node_modules', 'puppeteer-core') : 'puppeteer-core');
 const OUT = path.join(require('os').tmpdir(), 'tzp-gallery-e2e');

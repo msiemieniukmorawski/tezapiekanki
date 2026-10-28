@@ -1,10 +1,10 @@
 /**
- * WooCommerce Ship Today Notice: wybór terminu w checkoucie.
+ * WooCommerce Ship Today Notice: checkout slot picker.
  *
- * - zaznaczenie kafelka odświeża podsumowanie zamówienia (update_checkout),
- * - gdy godzina graniczna terminu minie na otwartej stronie, kafelek znika, dochodzi kolejny termin,
- *   a zaznaczenie przechodzi na najbliższy z komunikatem.
- * Ostateczna kontrola jest i tak na serwerze przy składaniu zamówienia.
+ * - selecting a tile refreshes the order review (update_checkout),
+ * - when a slot's cutoff time passes while the page is open, its tile disappears, the next slot is added,
+ *   and the selection moves to the nearest one with a notice.
+ * The final check happens on the server anyway when the order is placed.
  */
 (function ($) {
   'use strict';

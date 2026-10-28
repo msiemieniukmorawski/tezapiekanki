@@ -45,7 +45,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Lista terminów: [ship_today_notice count="2"] */
+/* Slot list: [ship_today_notice count="2"] */
 .wc-ship-today-notice--list {
   flex-direction: column;
   align-items: flex-start;

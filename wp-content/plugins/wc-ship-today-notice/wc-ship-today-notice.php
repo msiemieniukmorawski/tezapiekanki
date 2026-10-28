@@ -2,7 +2,7 @@
 
 /**
  * Plugin Name: Powiadomienie o wysyłce dziś
- * Description: Odliczanie do godziny granicznej i informacja o najbliższej wysyłce i dostawie. Użycie przez shortcode [ship_today_notice].
+ * Description: Countdown to the cutoff time and information about the next shipment and delivery. Usage via the [ship_today_notice] shortcode.
  * Version: 2.1.0
  * Author: MS-M.pl, Studio Zaiste
  * Text Domain: wc-ship-today-notice
@@ -29,7 +29,7 @@ final class WC_Ship_Today_Notice
     const TABLE_NAME       = 'wc_ship_today_notice_holidays';
     const WPML_DOMAIN      = 'wc-ship-today-notice';
 
-    /** Ile dni harmonogramu trafia do strony (musi pokryć czas trzymania strony w cache). */
+    /** How many days of the schedule are sent to the page (must cover how long the page stays in cache). */
     const FRONTEND_DAYS = 42;
 
     /** @var self|null */
@@ -38,7 +38,7 @@ final class WC_Ship_Today_Notice
     /** @var WC_STN_Schedule|null */
     private $schedule = null;
 
-    /** @var int Przesunięcie "teraz" w sekundach w trybie testowym (?stn_now=). */
+    /** @var int Offset of "now" in seconds in test mode (?stn_now=). */
     private $now_offset = 0;
 
     public static function instance()
@@ -76,7 +76,7 @@ final class WC_Ship_Today_Notice
     }
 
     /**
-     * Przesunięcie "teraz" w sekundach w trybie testowym (0 poza nim).
+     * Offset of "now" in seconds in test mode (0 outside of it).
      */
     public function now_offset()
     {
@@ -107,7 +107,7 @@ final class WC_Ship_Today_Notice
     }
 
     /**
-     * Silnik terminów na aktualnych ustawieniach.
+     * Schedule engine built on the current settings.
      */
     public function schedule()
     {
@@ -140,8 +140,8 @@ final class WC_Ship_Today_Notice
     }
 
     /**
-     * 1.x → 2.0: wykluczenia świąt zapisane po ID wiersza zamieniamy na daty
-     * (ID zmieniały się przy każdym pobraniu świąt, więc wykluczenia przepadały).
+     * 1.x → 2.0: holiday exclusions stored by row ID are converted to dates
+     * (IDs changed on every holiday fetch, so the exclusions were lost).
      */
     public function maybe_upgrade()
     {
@@ -201,11 +201,11 @@ final class WC_Ship_Today_Notice
     }
 
     /* ---------------------------------------------------------
-     * Tryb testowy i cache
+     * Test mode and cache
      * --------------------------------------------------------- */
 
     /**
-     * ?stn_now=2026-10-25T19:59 (tylko dla managera sklepu) podmienia "teraz" w PHP i w JS.
+     * ?stn_now=2026-10-25T19:59 (shop managers only) overrides "now" in PHP and JS.
      */
     public function maybe_enable_test_mode()
     {
@@ -222,8 +222,8 @@ final class WC_Ship_Today_Notice
         $this->now_offset = $fake->getTimestamp() - time();
         $offset           = $this->now_offset;
 
-        // Ze znacznika czasu, nie przez modify('+N seconds'): modify liczy po czasie zegarowym
-        // i przy zmianie czasu (np. 25.10) myli się o godzinę.
+        // From the timestamp, not via modify('+N seconds'): modify works in wall-clock time
+        // and is off by an hour across a DST change (e.g. 2026-10-25).
         add_filter('wc_ship_today_notice_now', function () use ($offset) {
             return (new DateTimeImmutable('@' . (time() + $offset)))->setTimezone(wp_timezone());
         });
@@ -238,8 +238,8 @@ final class WC_Ship_Today_Notice
     }
 
     /**
-     * Strony z cache mają tekst startowy policzony przy renderze. JS i tak przelicza termin,
-     * ale czyścimy cache o godzinie granicznej, żeby tekst startowy też był aktualny.
+     * Cached pages have the initial text computed at render time. JS recalculates the slot anyway,
+     * but we purge the cache at the cutoff time so the initial text is up to date as well.
      */
     private function purge_cache()
     {
@@ -292,7 +292,7 @@ final class WC_Ship_Today_Notice
     {
         register_setting(self::OPTION_KEY, self::OPTION_KEY, [$this, 'sanitize_options']);
 
-        // --- Sekcja: Shortcode Info ---
+        // --- Section: Shortcode Info ---
         add_settings_section(
             'wc_ship_today_shortcode',
             __('Shortcode', 'wc-ship-today-notice'),
@@ -300,7 +300,7 @@ final class WC_Ship_Today_Notice
             'wc-ship-today-notice'
         );
 
-        // --- Sekcja: Main settings ---
+        // --- Section: Main settings ---
         add_settings_section(
             'wc_ship_today_main',
             __('Main settings', 'wc-ship-today-notice'),
@@ -314,7 +314,7 @@ final class WC_Ship_Today_Notice
         add_settings_field('excluded_dates', __('Excluded dates', 'wc-ship-today-notice'), [$this, 'field_excluded_dates'], 'wc-ship-today-notice', 'wc_ship_today_main');
         add_settings_field('preview', 'Najbliższe terminy', [$this, 'field_preview'], 'wc-ship-today-notice', 'wc_ship_today_main');
 
-        // --- Sekcja: wybór terminu w checkoucie ---
+        // --- Section: checkout slot picker ---
         add_settings_section(
             'wc_ship_today_checkout',
             'Wybór terminu w checkoucie',
@@ -327,7 +327,7 @@ final class WC_Ship_Today_Notice
             add_settings_field('disable_iconic', 'Iconic Delivery Slots', [$this, 'field_disable_iconic'], 'wc-ship-today-notice', 'wc_ship_today_checkout');
         }
 
-        // --- Sekcja: Visibility ---
+        // --- Section: Visibility ---
         add_settings_section(
             'wc_ship_today_visibility',
             __('Widget visibility', 'wc-ship-today-notice'),
@@ -337,7 +337,7 @@ final class WC_Ship_Today_Notice
 
         add_settings_field('visibility_mode', __('Display widget', 'wc-ship-today-notice'), [$this, 'field_visibility_mode'], 'wc-ship-today-notice', 'wc_ship_today_visibility');
 
-        // --- Sekcja: Countdown format ---
+        // --- Section: Countdown format ---
         add_settings_section(
             'wc_ship_today_countdown',
             __('Countdown format', 'wc-ship-today-notice'),
@@ -347,7 +347,7 @@ final class WC_Ship_Today_Notice
 
         add_settings_field('countdown_format', __('Time labels', 'wc-ship-today-notice'), [$this, 'field_countdown_format'], 'wc-ship-today-notice', 'wc_ship_today_countdown');
 
-        // --- Sekcja: Public holidays API ---
+        // --- Section: Public holidays API ---
         add_settings_section(
             'wc_ship_today_holidays',
             __('Public holidays API', 'wc-ship-today-notice'),
@@ -359,7 +359,7 @@ final class WC_Ship_Today_Notice
         add_settings_field('language_code', __('Language ISO code', 'wc-ship-today-notice'), [$this, 'field_language_code'], 'wc-ship-today-notice', 'wc_ship_today_holidays');
         add_settings_field('holidays_list', __('Fetched holidays', 'wc-ship-today-notice'), [$this, 'field_holidays_list'], 'wc-ship-today-notice', 'wc_ship_today_holidays');
 
-        // --- Sekcja: Frontend texts ---
+        // --- Section: Frontend texts ---
         add_settings_section(
             'wc_ship_today_texts',
             __('Frontend texts', 'wc-ship-today-notice'),
@@ -502,7 +502,7 @@ final class WC_Ship_Today_Notice
     {
         $defaults = [
             'cutoff_time' => '14:00', // fallback global cutoff
-            // 'today' = odliczanie do dzisiejszej godziny granicznej (jak w 1.x), 'next_slot' = zawsze najbliższy termin
+            // 'today' = countdown to today's cutoff time (as in 1.x), 'next_slot' = always the next slot
             'mode' => 'today',
             // ISO-8601 numeric: 1=Mon ... 7=Sun
             'delivery_days' => [1, 2, 3, 4, 5],
@@ -516,13 +516,13 @@ final class WC_Ship_Today_Notice
                 6 => '12:00', // Saturday
                 7 => '12:00', // Sunday
             ],
-            // Ile dni przed dniem wysyłki wypada godzina graniczna (0 = ten sam dzień)
+            // How many days before the shipping day the cutoff falls (0 = same day)
             'cutoff_offsets' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0, 7 => 0],
-            // Dostawa: N dni doręczeń po wysyłce (0 = bez daty dostawy) i dni bez doręczeń
+            // Delivery: N delivery days after shipping (0 = no delivery date) and days without deliveries
             'delivery_offset' => 0,
             'no_delivery_days' => [7],
             'excluded_dates' => '',
-            'excluded_holiday_dates' => [], // święta ignorowane (wysyłka możliwa), daty Y-m-d
+            'excluded_holiday_dates' => [], // ignored holidays (shipping possible), Y-m-d dates
             'country_code' => 'PL',
             'language_code' => 'PL',
             'text_next_slot' => 'Zamów {cutoff_when}, wyślemy {ship_when}. Zostało: {countdown}',
@@ -540,12 +540,12 @@ final class WC_Ship_Today_Notice
             'countdown_label_m' => 'min',
             'countdown_label_s' => 's',
             'countdown_show_seconds' => true,
-            // Wybór terminu w checkoucie (domyślnie wyłączony)
+            // Checkout slot picker (disabled by default)
             'checkout_enabled' => false,
             'checkout_count' => 6,
             'checkout_preselect' => true,
             'checkout_label' => 'Termin dostawy',
-            'checkout_primary' => 'delivery', // co jest dużym napisem na kafelku: 'delivery' albo 'ship'
+            'checkout_primary' => 'delivery', // which date is the large label on the tile: 'delivery' or 'ship'
             'checkout_position' => 'shortcode', // 'shortcode', 'after_order_notes', 'before_order_review'
             'checkout_accent' => '',
             'disable_iconic' => false,
@@ -597,7 +597,7 @@ final class WC_Ship_Today_Notice
     }
 
     /**
-     * Section callback: lista tokenów
+     * Section callback: token list
      */
     public function section_texts_info()
     {
@@ -808,7 +808,7 @@ final class WC_Ship_Today_Notice
     }
 
     /**
-     * Podgląd 5 najbliższych terminów na zapisanych ustawieniach.
+     * Preview of the next 5 slots based on the saved settings.
      */
     public function field_preview()
     {
@@ -862,7 +862,7 @@ final class WC_Ship_Today_Notice
     }
 
     /**
-     * Field: lista świąt (bieżący i następny rok) z możliwością ignorowania po dacie.
+     * Field: holiday list (current and next year), each can be ignored by date.
      */
     public function field_holidays_list()
     {
@@ -1074,7 +1074,7 @@ final class WC_Ship_Today_Notice
     }
 
     /**
-     * Pobiera święta na bieżący i następny rok (w grudniu potrzebne są już święta styczniowe).
+     * Fetches holidays for the current and next year (in December the January holidays are already needed).
      */
     private function fetch_and_store_holidays()
     {
@@ -1173,8 +1173,8 @@ final class WC_Ship_Today_Notice
     }
 
     /**
-     * Skrypt i styl ładowane na każdej stronie (razem ok. 5 KB): shortcode bywa renderowany
-     * z cache Elementora albo w popupach, wtedy enqueue z wnętrza shortcode by nie zadziałał.
+     * Script and style are loaded on every page (about 5 KB together): the shortcode may be rendered
+     * from the Elementor cache or inside popups, where enqueueing from within the shortcode would not work.
      */
     public function register_assets()
     {
@@ -1230,12 +1230,12 @@ final class WC_Ship_Today_Notice
             esc_attr(implode(' ', $classes)),
             esc_attr(wp_json_encode($config)),
             $state['hide'] ? ' style="display:none;"' : '',
-            $state['html'] // phpcs:ignore WordPress.Security.EscapeOutput -- teksty z wp_kses_post + etykiety dni.
+            $state['html'] // phpcs:ignore WordPress.Security.EscapeOutput -- texts from wp_kses_post + day labels.
         );
     }
 
     /**
-     * Dane dla JS: harmonogram na FRONTEND_DAYS dni (absolutne znaczniki czasu, więc działa ze strony z cache).
+     * Data for JS: schedule for FRONTEND_DAYS days (absolute timestamps, so it works from a cached page).
      */
     private function frontend_config(array $o, $mode, $count, $text)
     {
@@ -1290,7 +1290,7 @@ final class WC_Ship_Today_Notice
     }
 
     /**
-     * Ten sam stan co w notice.js, policzony na serwerze (pierwsze wyświetlenie i brak JS).
+     * The same state as in notice.js, computed on the server (first render and no-JS fallback).
      */
     private function initial_state(array $config)
     {

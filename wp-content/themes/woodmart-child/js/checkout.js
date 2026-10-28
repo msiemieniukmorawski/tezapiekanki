@@ -1,8 +1,8 @@
 /**
- * Checkout TeZapiekanki (inc/checkout.php).
+ * TeZapiekanki checkout (inc/checkout.php).
  *
- * Nic tu nie zastępuje logiki WooCommerce ani wtyczek przewoźnika: kafelki to etykiety oryginalnych pól wysyłki,
- * przycisk paczkomatu uruchamia oryginalny przycisk mapy (Apaczka albo InPost PL), kupon idzie do wbudowanego endpointu apply_coupon.
+ * Nothing here replaces WooCommerce or carrier plugin logic: the tiles are labels of the original shipping inputs,
+ * the parcel locker button triggers the original map button (Apaczka or InPost PL), the coupon goes to the built-in apply_coupon endpoint.
  */
 (function ($) {
   'use strict';
@@ -11,17 +11,17 @@
     return;
   }
 
-  /* ---------- Metody wysyłki: natychmiastowe zaznaczenie kafelka (resztę robi WooCommerce) ---------- */
+  /* ---------- Shipping methods: mark the tile as checked immediately (WooCommerce does the rest) ---------- */
 
   $(document).on('click', '.tzp-method', function () {
     $(this).addClass('is-checked').siblings('.tzp-method').removeClass('is-checked');
   });
 
-  /* ---------- Paczkomat: mapę i zapis punktu obsługuje wtyczka przewoźnika ---------- */
+  /* ---------- Parcel locker: the map and saving the point are handled by the carrier plugin ---------- */
 
-  // Wybrany punkt czytamy z ukrytych pól, które wtyczka dopisuje na końcu form.checkout. Tylko te pola przetrwają
-  // odświeżenie podsumowania (update_checkout podmienia tabelę razem z oryginalnym "Wybrany paczkomat")
-  // i to one trafiają do zamówienia: PHP bierze ostatnie pole o danej nazwie, więc my też czytamy ostatnie.
+  // The selected point is read from the hidden inputs the plugin appends to the end of form.checkout. Only these inputs survive
+  // a summary refresh (update_checkout replaces the table together with the original "Wybrany paczkomat")
+  // and they are what gets saved with the order: PHP takes the last input with a given name, so we read the last one too.
   function lastFieldValue(name) {
     var $fields = $('form.checkout').find('input[name="' + name + '"]');
     return $fields.length ? $.trim($fields.last().val() || '') : '';
@@ -31,7 +31,7 @@
     return $.grep(parts, function (part) { return !!part; }).join(separator);
   }
 
-  // data-provider z inc/checkout.php (tzp_checkout_parcel_provider). buttons: oryginalne przyciski mapy, pierwszy istniejący.
+  // data-provider from inc/checkout.php (tzp_checkout_parcel_provider). buttons: original map buttons, the first existing one is used.
   var parcelProviders = {
     apaczka: {
       buttons: ['#apaczka_pl_geowidget_classic'],
@@ -47,7 +47,7 @@
         };
       }
     },
-    // InPost PL (iLabs): przycisk w podsumowaniu albo, w trybie "przycisk mapy przez JS", pod metodą wysyłki.
+    // InPost PL (iLabs): button in the summary or, in "JS map button" mode, below the shipping method.
     inpost: {
       buttons: ['#easypack_show_geowidget', '#easypack_js_type_geowidget'],
       selected: function () {
@@ -56,7 +56,7 @@
           return null;
         }
         var point = { code: code, address: '', desc: lastFieldValue('parcel_machine_desc') };
-        // Adres wtyczka trzyma tylko w localStorage: "KOD<br>ulica<br>kod miasto<br>opis" albo "ulica<br>kod miasto".
+        // The plugin keeps the address only in localStorage: "CODE<br>street<br>postcode city<br>description" or "street<br>postcode city".
         try {
           var stored = JSON.parse(window.localStorage.getItem('EasyPackPointObject') || 'null');
           if (stored && stored.pointName === code && stored.visiblePointData) {
@@ -92,7 +92,7 @@
     }
   });
 
-  // Zmienia DOM tylko przy zmianie stanu: obserwator formularza wywołuje tę funkcję także po jej własnych zmianach.
+  // Touches the DOM only when the state changes: the form observer also calls this function after its own changes.
   function syncParcel() {
     var $box = $('.tzp-parcel');
     var provider = $box.length ? parcelProvider() : null;
@@ -115,7 +115,7 @@
       $box.find('.tzp-parcel__button').text(point ? 'Zmień paczkomat' : 'Wybierz paczkomat');
     }
 
-    // Numer paczkomatu także w podsumowaniu, pod metodą wysyłki.
+    // Parcel locker code also in the summary, below the shipping method.
     var $cell = $('.tzp-checkout-side .woocommerce-shipping-totals td').first();
     var $line = $cell.children('.tzp-summary-parcel');
     var text = point && $box.length ? 'Paczkomat ' + point.code : '';
@@ -129,7 +129,7 @@
     }
   }
 
-  // Wtyczki zmieniają wybór w swoich callbackach mapy (dopisują pola do formularza, podmieniają tekst w tabeli).
+  // The plugins change the selection in their map callbacks (append inputs to the form, replace text in the table).
   function observeParcel() {
     var form = document.querySelector('form.checkout');
     if (!form || form.__tzpObserved || typeof MutationObserver === 'undefined') {
@@ -150,9 +150,9 @@
     }).observe(form, { subtree: true, childList: true, characterData: true });
   }
 
-  /* ---------- Kod rabatowy nad "Łącznie" ---------- */
+  /* ---------- Coupon code above "Łącznie" ---------- */
 
-  // Tabela podsumowania jest podmieniana po każdym update_checkout, więc pamiętamy stan pola.
+  // The summary table is replaced after every update_checkout, so we remember the field state.
   var coupon = { open: false, value: '', message: '' };
 
   function applyCoupon() {
@@ -190,7 +190,7 @@
     applyCoupon();
   });
 
-  // Enter w polu kodu nie może wysłać całego zamówienia.
+  // Enter in the code field must not submit the whole order.
   $(document).on('keydown', '#tzp_coupon_code', function (e) {
     if (e.key === 'Enter' || e.keyCode === 13) {
       e.preventDefault();
@@ -221,7 +221,7 @@
     }
   }
 
-  /* ---------- Faktura na firmę: pola firmy i NIP pod checkboxem ---------- */
+  /* ---------- Company invoice: company name and NIP fields behind a checkbox ---------- */
 
   function initInvoiceToggle() {
     var $company = $('#billing_nazwa_firmy_field');
@@ -249,7 +249,7 @@
     set(hasData);
   }
 
-  /* ---------- Telefon: podsumowanie zwinięte w pasek z kwotą ---------- */
+  /* ---------- Mobile: summary collapsed into a bar with the total ---------- */
 
   function initSummaryToggle() {
     var $side = $('.tzp-checkout-side');
@@ -267,18 +267,18 @@
   }
 
   function updateSummaryTotal() {
-    // Pierwsza kwota w "Łącznie" to suma; dalej może być kwota VAT ("zawiera 2,80 zł VAT").
+    // The first amount in "Łącznie" is the total; the VAT amount may follow ("zawiera 2,80 zł VAT").
     var total = $.trim($('.woocommerce-checkout-review-order-table .order-total .woocommerce-Price-amount').first().text());
     $('.tzp-summary-toggle__total').text(total);
   }
 
-  /* ---------- Start i odświeżenia checkoutu ---------- */
+  /* ---------- Startup and checkout refreshes ---------- */
 
   function refresh() {
     restoreCoupon();
     updateSummaryTotal();
     syncParcel();
-    // InPost PL odtwarza punkt z localStorage we własnym handlerze updated_checkout, więc jeszcze raz chwilę później.
+    // InPost PL restores the point from localStorage in its own updated_checkout handler, so run again shortly after.
     setTimeout(syncParcel, 60);
   }
 

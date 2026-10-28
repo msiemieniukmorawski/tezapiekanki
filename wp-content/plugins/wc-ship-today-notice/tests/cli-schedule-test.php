@@ -1,10 +1,10 @@
 <?php
 /**
- * Tabela przypadków dla silnika terminów.
+ * Test case table for the schedule engine.
  *
- * Uruchomienie: wp eval-file wp-content/plugins/wc-ship-today-notice/tests/cli-schedule-test.php
- * Wymaga pobranych świąt PL na lata 2026-2027 (WooCommerce → Ship Today Notice → Pobierz święta).
- * Nie zmienia zapisanych ustawień: konfiguracje są podawane wprost do WC_STN_Schedule.
+ * Run: wp eval-file wp-content/plugins/wc-ship-today-notice/tests/cli-schedule-test.php
+ * Requires PL holidays fetched for 2026-2027 (WooCommerce → Ship Today Notice → Fetch holidays now).
+ * Does not change saved settings: configurations are passed directly to WC_STN_Schedule.
  */
 
 if (!defined('ABSPATH')) {
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
 
 $tz = new DateTimeZone('Europe/Warsaw');
 
-// Wysyłka pn i śr, zamówienia do 20:00 dzień wcześniej, dostawa następnego dnia doręczeń (jak TeZapiekanki).
+// Shipping Mon and Wed, orders until 20:00 the day before, delivery on the next delivery day (as at TeZapiekanki).
 $two_days = [
     'delivery_days'    => [1, 3],
     'cutoff_times'     => [1 => '20:00', 3 => '20:00'],
@@ -23,7 +23,7 @@ $two_days = [
     'country_code'     => 'PL',
 ];
 
-// Tryb 1.x: pn-pt do 14:00 tego samego dnia, bez daty dostawy.
+// 1.x mode: Mon-Fri until 14:00 the same day, no delivery date.
 $legacy = [
     'delivery_days'  => [1, 2, 3, 4, 5],
     'cutoff_times'   => [1 => '14:00', 2 => '14:00', 3 => '14:00', 4 => '14:00', 5 => '14:00'],
@@ -31,7 +31,7 @@ $legacy = [
     'country_code'   => 'PL',
 ];
 
-// [opis, konfiguracja, teraz, oczekiwane: godzina graniczna, wysyłka, dostawa]
+// [label, configuration, now, expected: cutoff, shipping, delivery]
 $cases = [
     ['niedziela przed 20:00 (dzień zmiany czasu)', $two_days, '2026-10-25 19:59', '2026-10-25 20:00', '2026-10-26', '2026-10-27'],
     ['niedziela dokładnie 20:00', $two_days, '2026-10-25 20:00', '2026-10-27 20:00', '2026-10-28', '2026-10-29'],
@@ -48,7 +48,7 @@ $cases = [
     ['1.x: 11.11 to święto', $legacy, '2026-11-10 15:00', '2026-11-12 14:00', '2026-11-12', ''],
 ];
 
-// [opis, teraz, tekst, oczekiwany wynik] na konfiguracji $two_days
+// [label, now, text, expected result] on the $two_days configuration
 $texts = [
     ['dziś', '2026-10-25 15:00', 'Zamów {cutoff_when}, dostarczymy {delivery_when}.', 'Zamów dziś do 20:00, dostarczymy we wtorek.'],
     ['jutro', '2026-10-24 12:00', 'Zamów {cutoff_when}, dostarczymy {delivery_when}.', 'Zamów jutro do 20:00, dostarczymy we wtorek.'],

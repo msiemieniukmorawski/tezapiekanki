@@ -1,15 +1,15 @@
 <?php
 /**
- * Checkout TeZapiekanki (layout Woodmarta 6470, wariant B z propozycji z 18.10.2026).
+ * TeZapiekanki checkout (Woodmart layout 6470, variant B from the 2026-10-18 proposal).
  *
- * - [tzp_checkout_delivery]: kafelki metod wysyłki i przycisk paczkomatu w sekcji "Dostawa",
- * - pole kodu rabatowego w podsumowaniu, nad "Łącznie",
- * - kwota na przycisku "Kupuję i płacę".
+ * - [tzp_checkout_delivery]: shipping method tiles and parcel locker button in the "Dostawa" section,
+ * - coupon code field in the order summary, above "Łącznie",
+ * - order total on the "Kupuję i płacę" button.
  *
- * Bez usuwania hooków WooCommerce i bez nadpisywania szablonów: oryginalne pola wyboru wysyłki
- * i przycisk mapy (Apaczka albo InPost PL) zostają w tabeli podsumowania (ukryte wizualnie w style.css). Kafelki to etykiety
- * <label for> podpięte do oryginalnych pól, a nasz przycisk uruchamia oryginalny przycisk mapy (js/checkout.js),
- * więc walidacja, zapis zamówienia i mapa działają bez zmian.
+ * No WooCommerce hooks are removed and no templates are overridden: the original shipping radio inputs
+ * and the map button (Apaczka or InPost PL) stay in the summary table (visually hidden in style.css). The tiles are
+ * <label for> elements bound to the original inputs, and our button triggers the original map button (js/checkout.js),
+ * so validation, order saving and the map work unchanged.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -21,9 +21,9 @@ add_filter( 'woocommerce_order_button_html', 'tzp_checkout_order_button_with_tot
 add_action( 'wp_enqueue_scripts', 'tzp_checkout_assets' );
 
 /**
- * Czy layout checkoutu jest już przebudowany (zawiera [tzp_checkout_delivery]).
- * Pozwala wgrać motyw potomny przed przebudową layoutu 6470: na starym checkoucie nie pojawi się
- * drugie pole kuponu ani kwota na przycisku.
+ * Whether the checkout layout has already been rebuilt (contains [tzp_checkout_delivery]).
+ * Lets the child theme be deployed before layout 6470 is rebuilt: the old checkout won't get
+ * a second coupon field or the total on the button.
  */
 function tzp_checkout_layout_ready() {
 	static $ready = null;
@@ -55,7 +55,7 @@ function tzp_checkout_layout_ready() {
 }
 
 /**
- * Skrypt checkoutu tylko na stronie zamówienia.
+ * Checkout script, only on the checkout page.
  */
 function tzp_checkout_assets() {
 	if ( ! function_exists( 'is_checkout' ) || ! is_checkout() || is_order_received_page() || ! tzp_checkout_layout_ready() ) {
@@ -75,7 +75,7 @@ function tzp_checkout_delivery_shortcode() {
 }
 
 /**
- * Sekcja odświeżana razem z checkoutem (ceny i dostępne metody mogą się zmienić po zmianie adresu).
+ * Section refreshed together with the checkout (prices and available methods may change after an address change).
  */
 function tzp_checkout_delivery_fragment( $fragments ) {
 	if ( ! tzp_checkout_layout_ready() ) {
@@ -88,7 +88,7 @@ function tzp_checkout_delivery_fragment( $fragments ) {
 }
 
 /**
- * Kafelki metod wysyłki. Identyfikatory pól jak w szablonie WooCommerce cart/cart-shipping.php.
+ * Shipping method tiles. Input IDs match the WooCommerce template cart/cart-shipping.php.
  */
 function tzp_checkout_delivery_html() {
 	$html = '<div class="tzp-delivery-methods">';
@@ -100,7 +100,7 @@ function tzp_checkout_delivery_html() {
 	$packages = WC()->shipping()->get_packages();
 
 	if ( empty( $packages ) && ! wp_doing_ajax() ) {
-		// Sekcja renderuje się przed podsumowaniem, więc koszyk może nie być jeszcze przeliczony (to samo robi WooCommerce przed tabelą).
+		// The section renders before the summary, so the cart may not be calculated yet (WooCommerce does the same before the table).
 		WC()->cart->calculate_totals();
 		$packages = WC()->shipping()->get_packages();
 	}
@@ -135,7 +135,7 @@ function tzp_checkout_delivery_html() {
 		}
 		$html .= '</div>';
 
-		// Paczkomat: nasz przycisk uruchamia oryginalny przycisk wtyczki przewoźnika (js/checkout.js, parcelProviders).
+		// Parcel locker: our button triggers the carrier plugin's original button (js/checkout.js, parcelProviders).
 		$provider = tzp_checkout_parcel_provider( $rates[ $current ] );
 		if ( '' !== $provider ) {
 			$html .= sprintf(
@@ -162,14 +162,14 @@ function tzp_checkout_rate_cost( $rate ) {
 }
 
 /**
- * Która wtyczka obsługuje wybór paczkomatu dla tej metody wysyłki: 'inpost', 'apaczka' albo '' (bez paczkomatu).
+ * Which plugin handles parcel locker selection for this shipping method: 'inpost', 'apaczka' or '' (no parcel locker).
  *
- * - InPost PL (iLabs, inpost-for-woocommerce): metoda easypack_parcel_machines* albo metoda Flexible Shipping
- *   powiązana z nią w ustawieniu "Integracja z InPost PL" (fs_inpost_pl_method). Tak samo sprawdza to wtyczka.
- * - Apaczka: metoda z zaznaczonym "display_apaczka_map".
+ * - InPost PL (iLabs, inpost-for-woocommerce): an easypack_parcel_machines* method or a Flexible Shipping method
+ *   linked to one via the "Integracja z InPost PL" setting (fs_inpost_pl_method). The plugin checks it the same way.
+ * - Apaczka: a method with "display_apaczka_map" checked.
  *
- * Gdy metoda jest podpięta pod obie wtyczki, wygrywa InPost PL. Inną wtyczkę można dodać filtrem
- * tzp_checkout_parcel_provider i wpisem w parcelProviders w js/checkout.js.
+ * If a method is linked to both plugins, InPost PL wins. Another plugin can be added with the
+ * tzp_checkout_parcel_provider filter and an entry in parcelProviders in js/checkout.js.
  */
 function tzp_checkout_parcel_provider( $rate ) {
 	$method_id = $rate->get_method_id();
@@ -195,8 +195,8 @@ function tzp_checkout_parcel_provider( $rate ) {
 }
 
 /**
- * Kod rabatowy nad "Łącznie". Pole bez atrybutu name (nie trafia do zamówienia),
- * kod zatwierdza js/checkout.js przez wbudowany endpoint WooCommerce apply_coupon.
+ * Coupon code above "Łącznie". The field has no name attribute (it isn't submitted with the order);
+ * js/checkout.js applies the code via WooCommerce's built-in apply_coupon endpoint.
  */
 function tzp_checkout_coupon_row() {
 	if ( ! wc_coupons_enabled() || ! tzp_checkout_layout_ready() ) {
@@ -220,7 +220,7 @@ function tzp_checkout_coupon_row() {
 }
 
 /**
- * "Kupuję i płacę · 39,99 zł". data-value też z kwotą, bo WooCommerce przywraca z niego tekst po zmianie płatności.
+ * "Kupuję i płacę · 39,99 zł". data-value gets the total too, because WooCommerce restores the text from it after a payment method change.
  */
 function tzp_checkout_order_button_with_total( $html ) {
 	if ( ! WC()->cart || ! tzp_checkout_layout_ready() ) {

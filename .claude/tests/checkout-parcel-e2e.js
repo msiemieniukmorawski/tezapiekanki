@@ -1,12 +1,12 @@
-// Test wyboru paczkomatu w checkoucie (wariant B) na kopii lokalnej. Opis w CLAUDE.md, sekcja 8 "Układ checkoutu".
+// Test of parcel locker selection in the checkout (variant B) on the local copy. Described in CLAUDE.md, section 8 "Układ checkoutu".
 //
-// Mapy nie da się kliknąć w teście (zewnętrzny widget), więc wybór punktu symuluje wywołanie tego samego callbacku,
-// który woła mapa: window.apaczka_mp_map_callback (Apaczka) albo inpost_pl_select_point_callback (InPost PL).
+// The map cannot be clicked in a test (external widget), so point selection is simulated by calling the same callback
+// the map calls: window.apaczka_mp_map_callback (Apaczka) or inpost_pl_select_point_callback (InPost PL).
 //
-// Uruchomienie (BACS włączony na czas testu, jak w checkout-e2e.js):
+// Usage (BACS enabled for the duration of the test, as in checkout-e2e.js):
 //   PPTR_DIR="katalog/z/node_modules" PROVIDER=apaczka node .claude/tests/checkout-parcel-e2e.js
-//   PROVIDER=inpost wymaga aktywnej wtyczki InPost PL i metody Paczkomat powiązanej z "InPost Paczkomat 24/7".
-// Po teście: wyłącz BACS, zamówienie testowe (numer w parcel-order-id.txt) anuluj i usuń.
+//   PROVIDER=inpost requires the active InPost PL plugin and the Paczkomat method linked to "InPost Paczkomat 24/7".
+// After the test: disable BACS, cancel and delete the test order (number in parcel-order-id.txt).
 const path = require('path');
 const fs = require('fs');
 const OUT = path.join(require('os').tmpdir(), 'tzp-checkout-e2e-parcel');
@@ -36,13 +36,13 @@ async function clickAndWait(page, selector) {
   await wait;
 }
 
-// Ten sam kształt danych, który przekazuje mapa danej wtyczki.
+// The same data shape that the given plugin's map passes.
 async function pickPoint(page) {
   await page.evaluate((provider) => {
     if (provider === 'apaczka') {
       window.apaczka_mp_map_callback({ code: 'WAW01M', operator: 'INPOST', brand: 'INPOST', description: 'Przy sklepie Żabka', street: 'Prosta 18', city: 'Warszawa', postalCode: '00-850' });
     } else {
-      // Tryb "przycisk mapy przez JS" (easypack_js_map_button) ładuje front.js z innym callbackiem.
+      // The "map button via JS" mode (easypack_js_map_button) loads front.js with a different callback.
       const cb = window.easypack_front_map ? window.inpost_pl_select_point_callback_js_mode : window.inpost_pl_select_point_callback;
       cb({ name: 'PL_WAW01M', address: { line1: 'Prosta 18', line2: '00-850 Warszawa' }, location_description: 'Przy sklepie Żabka' });
     }
@@ -85,11 +85,11 @@ const state = (page) => page.evaluate(() => {
     await page.waitForFunction(() => !document.querySelector('.blockUI'), { timeout: 60000 });
     await sleep(1500);
 
-    // 1. Start: Paczkomat, przycisk właściwej wtyczki, nic nie wybrane
+    // 1. Start: Paczkomat, the right plugin's button, nothing selected
     let s = await state(page);
     ok(`start: przycisk paczkomatu obsługuje ${PROVIDER}`, s.provider === PROVIDER && !s.visible && s.button === 'Wybierz paczkomat', JSON.stringify(s));
 
-    // 2. Nasz przycisk otwiera mapę wtyczki
+    // 2. Our button opens the plugin's map
     await page.click('.tzp-parcel__button');
     await sleep(1500);
     const opened = await page.evaluate((provider) => {
@@ -108,7 +108,7 @@ const state = (page) => page.evaluate(() => {
     }, PROVIDER);
     await sleep(600);
 
-    // 3. Wybór punktu na mapie
+    // 3. Picking a point on the map
     await pickPoint(page);
     s = await state(page);
     ok('po wyborze: kod, adres i opis w sekcji Dostawa', s.visible && s.code === 'WAW01M' && /Prosta 18/.test(s.address) && /00-850 Warszawa/.test(s.address), JSON.stringify(s));
@@ -116,13 +116,13 @@ const state = (page) => page.evaluate(() => {
     await page.$eval('.tzp-parcel', (el) => el.scrollIntoView({ block: 'center' }));
     await page.screenshot({ path: path.join(OUT, `${PROVIDER}-desk-selected.png`) });
 
-    // 4. Zmiana terminu dostawy odświeża podsumowanie: wybór musi zostać
+    // 4. Changing the delivery date refreshes the summary: the selection must stay
     await clickAndWait(page, '.wc-stn-tile:not(.is-checked)');
     await sleep(300);
     s = await state(page);
     ok('po zmianie terminu (update_checkout): paczkomat dalej widoczny', s.visible && s.code === 'WAW01M' && s.summary === 'Paczkomat WAW01M', JSON.stringify(s));
 
-    // 5. Zmiana miasta też odświeża checkout
+    // 5. Changing the city also refreshes the checkout
     const wait = waitUpdated(page);
     await page.$eval('#billing_city', (el) => { el.value = 'Warszawa'; jQuery(el).trigger('change'); });
     await page.evaluate(() => jQuery(document.body).trigger('update_checkout'));
@@ -131,7 +131,7 @@ const state = (page) => page.evaluate(() => {
     s = await state(page);
     ok('po kolejnym odświeżeniu: paczkomat dalej widoczny', s.visible && s.code === 'WAW01M', JSON.stringify(s));
 
-    // 6. Kurier i powrót: wtyczka czyści wybór, my też
+    // 6. Courier and back: the plugin clears the selection, and so do we
     await clickAndWait(page, 'label.tzp-method[for$="single12"]');
     s = await state(page);
     ok('Kurier: bez paczkomatu w Dostawie i w podsumowaniu', s.provider === null && s.summary === '', JSON.stringify(s));
@@ -140,7 +140,7 @@ const state = (page) => page.evaluate(() => {
     s = await state(page);
     ok('powrót na Paczkomat: wybór wyczyszczony, jak w wtyczce', s.provider === PROVIDER && !s.visible && s.button === 'Wybierz paczkomat', JSON.stringify(s));
 
-    // 7. Ponowny wybór i zamówienie z paczkomatem
+    // 7. Picking again and placing an order with a parcel locker
     await pickPoint(page);
     await clickAndWait(page, '.wc-stn-tile:not(.is-checked)');
     s = await state(page);
@@ -175,7 +175,7 @@ const state = (page) => page.evaluate(() => {
     }
     ok('brak błędów JS', jsErrors.length === 0, jsErrors.slice(0, 3).join(' | '));
 
-    // 8. Telefon: wygląd wybranego paczkomatu
+    // 8. Phone: how the selected parcel locker looks
     const mob = await browser.newPage();
     await mob.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
     await mob.goto(BASE + '/?add-to-cart=274', { waitUntil: 'domcontentloaded', timeout: 120000 });

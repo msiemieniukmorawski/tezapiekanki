@@ -1,7 +1,7 @@
-// Uruchomienie: PPTR_DIR="katalog/z/node_modules" node .claude/tests/<plik>.js (puppeteer-core 23.11.1, zainstalowany Chrome).
-// Zrzuty ekranu: %TEMP%\tzp-gallery-e2e. Nie składa zamówień. Opis galerii: CLAUDE.md, sekcja 7 "Zdjęcia i galeria".
-// Test galerii produktu: desktop i tablet (duże pierwsze zdjęcie, kafelki 4:3 po 2, przy więcej niż 6 zdjęciach
-// przycisk "Zobacz więcej zdjęć" pod siatką rozwija i zwija resztę, lightbox), telefon (karuzela, wystające zdjęcie, licznik, lightbox po dotknięciu).
+// Usage: PPTR_DIR="katalog/z/node_modules" node .claude/tests/<plik>.js (puppeteer-core 23.11.1, installed Chrome).
+// Screenshots: %TEMP%\tzp-gallery-e2e. Places no orders. Gallery description: CLAUDE.md, section 7 "Zdjęcia i galeria".
+// Product gallery test: desktop and tablet (large first image, 4:3 tiles two per row, with more than 6 images
+// the "Zobacz więcej zdjęć" button below the grid expands and collapses the rest, lightbox), phone (carousel, peeking next image, counter, lightbox on tap).
 const path = require('path');
 const puppeteer = require(process.env.PPTR_DIR ? path.join(process.env.PPTR_DIR, 'node_modules', 'puppeteer-core') : 'puppeteer-core');
 const OUT = path.join(require('os').tmpdir(), 'tzp-gallery-e2e');
@@ -48,7 +48,7 @@ const BASE = 'http://tezapiekanki.local/produkt/';
     counter: ((document.querySelector('.pswp__counter') || {}).textContent || '').trim(),
   }));
 
-  // Desktop: Kebab (8 zdjęć)
+  // Desktop: Kebab (8 images)
   let page = await open('zapiekanka-kebab', { width: 1440, height: 1000 });
   let s = await gridState(page);
   ok('desktop: duże pierwsze zdjęcie, pod nim 2 kolumny, widać 5 z 8 (1 + 2 + 2)', !s.swiper && s.total === 8 && s.visible === 5 && s.rows === 3 && s.firstW > s.tileW * 1.9, JSON.stringify({ visible: s.visible, rows: s.rows, firstW: s.firstW, tileW: s.tileW }));
@@ -84,7 +84,7 @@ const BASE = 'http://tezapiekanki.local/produkt/';
   ok('po zwinięciu przycisk w widoku', btnTop >= 0 && btnTop < 1000, `top=${btnTop}`);
   await page.close();
 
-  // Desktop: 6 i 7 zdjęć
+  // Desktop: 6 and 7 images
   for (const [slug, total, visible, button] of [['zapiekanka-z-szynka', 6, 6, null], ['zapiekanka-goralska', 7, 5, 'Zobacz więcej zdjęć']]) {
     page = await open(slug, { width: 1440, height: 1000 });
     s = await gridState(page);
@@ -92,13 +92,13 @@ const BASE = 'http://tezapiekanki.local/produkt/';
     await page.close();
   }
 
-  // Tablet 900 px: siatka z przyciskiem
+  // Tablet 900 px: grid with the button
   page = await open('zapiekanka-kebab', { width: 900, height: 1100 });
   s = await gridState(page);
   ok('tablet 900 px: duże + 4 kafelki, "Zobacz więcej zdjęć", bez karuzeli', !s.swiper && s.visible === 5 && s.rows === 3 && s.button === 'Zobacz więcej zdjęć', JSON.stringify({ visible: s.visible, rows: s.rows, button: s.button, swiper: s.swiper }));
   await page.close();
 
-  // Telefon
+  // Phone
   page = await open('zapiekanka-kebab', { width: 390, height: 844, isMobile: true, hasTouch: true });
   let m = await page.evaluate(() => {
     const gal = document.querySelector('.tzp-gallery .woocommerce-product-gallery__wrapper');
@@ -127,7 +127,7 @@ const BASE = 'http://tezapiekanki.local/produkt/';
   await sleep(700);
   m = await page.evaluate(() => document.querySelector('.tzp-gallery__counter').textContent);
   ok('telefon: po przesunięciu licznik "2 / 8"', m === '2 / 8', m);
-  // Dotknięcie w widocznej części aktywnego slajdu, poniżej nagłówka (nagłówek leży na galerii).
+  // Tap in the visible part of the active slide, below the header (the header overlaps the gallery).
   const pt = await page.evaluate(() => {
     const r = document.querySelector('.tzp-gallery .wd-carousel-item.wd-active').getBoundingClientRect();
     return { x: Math.round(Math.max(r.left, 0) + 60), y: Math.round(Math.max(r.top, 0) + r.height * 0.75) };

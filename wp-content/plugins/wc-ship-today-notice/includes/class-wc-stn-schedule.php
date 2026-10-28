@@ -1,13 +1,13 @@
 <?php
 /**
- * Silnik terminów: najbliższe wysyłki, godziny graniczne, daty dostawy.
+ * Schedule engine: next shipments, cutoff times, delivery dates.
  *
- * Czysta logika na DateTimeImmutable w strefie czasowej sklepu, bez HTML.
+ * Pure logic on DateTimeImmutable in the shop's time zone, no HTML.
  *
  * Model:
- * - dzień wysyłki = dzień tygodnia zaznaczony w ustawieniach, który nie jest świętem ani datą wykluczoną,
- * - godzina graniczna = godzina dla tego dnia tygodnia, przesunięta o N dni wstecz (0 = ten sam dzień),
- * - dostawa = N-ty kolejny dzień doręczeń po wysyłce (bez dni bez doręczeń i świąt), 0 = bez daty dostawy.
+ * - shipping day = a weekday checked in the settings that is not a holiday or an excluded date,
+ * - cutoff = the time set for that weekday, shifted N days back (0 = same day),
+ * - delivery = the Nth delivery day after shipping (skipping no-delivery days and holidays), 0 = no delivery date.
  */
 
 if (!defined('ABSPATH')) {
@@ -16,10 +16,10 @@ if (!defined('ABSPATH')) {
 
 final class WC_STN_Schedule
 {
-    /** Ile dni do przodu szukamy terminów. */
+    /** How many days ahead we search for slots. */
     const HORIZON_DAYS = 60;
 
-    /** Nazwy dni (ISO-8601: 1 = poniedziałek ... 7 = niedziela). */
+    /** Day names (ISO-8601: 1 = Monday ... 7 = Sunday). */
     const DAY_NOMINATIVE = [1 => 'poniedziałek', 2 => 'wtorek', 3 => 'środa', 4 => 'czwartek', 5 => 'piątek', 6 => 'sobota', 7 => 'niedziela'];
     const DAY_GENITIVE   = [1 => 'poniedziałku', 2 => 'wtorku', 3 => 'środy', 4 => 'czwartku', 5 => 'piątku', 6 => 'soboty', 7 => 'niedzieli'];
     const DAY_ON         = [1 => 'w poniedziałek', 2 => 'we wtorek', 3 => 'w środę', 4 => 'w czwartek', 5 => 'w piątek', 6 => 'w sobotę', 7 => 'w niedzielę'];
@@ -31,7 +31,7 @@ final class WC_STN_Schedule
     /** @var DateTimeZone */
     private $tz;
 
-    /** @var array<string,string>|null Święta: Y-m-d => nazwa. */
+    /** @var array<string,string>|null Holidays: Y-m-d => name. */
     private $holidays = null;
 
     /** @var array<string,bool>|null */
@@ -49,7 +49,7 @@ final class WC_STN_Schedule
     }
 
     /**
-     * "Teraz" w strefie sklepu. Filtr pozwala podmienić czas (tryb testowy).
+     * "Now" in the shop's time zone. The filter allows overriding the time (test mode).
      */
     public function now(): DateTimeImmutable
     {
@@ -64,7 +64,7 @@ final class WC_STN_Schedule
     }
 
     /* ---------------------------------------------------------
-     * Dni wysyłki
+     * Shipping days
      * --------------------------------------------------------- */
 
     public function is_shipping_weekday(DateTimeImmutable $day): bool
@@ -73,7 +73,7 @@ final class WC_STN_Schedule
     }
 
     /**
-     * Święto, którego nie zignorowano w ustawieniach, albo data wykluczona ręcznie.
+     * A holiday not ignored in the settings, or a manually excluded date.
      */
     public function is_blocked(string $ymd): bool
     {
@@ -93,7 +93,7 @@ final class WC_STN_Schedule
     }
 
     /**
-     * Godzina graniczna dla danego dnia wysyłki.
+     * Cutoff time for the given shipping day.
      */
     public function cutoff_for(DateTimeImmutable $ship_day): DateTimeImmutable
     {
@@ -129,12 +129,12 @@ final class WC_STN_Schedule
     }
 
     /* ---------------------------------------------------------
-     * Dostawa
+     * Delivery
      * --------------------------------------------------------- */
 
     /**
-     * Dzień doręczeń: nie jest w "dniach bez doręczeń" i nie jest świętem państwowym
-     * (ignorowanie święta dotyczy tylko wysyłki, kurier i tak w święto nie jeździ).
+     * Delivery day: not among the "no-delivery days" and not a public holiday
+     * (ignoring a holiday applies only to shipping, couriers don't deliver on holidays anyway).
      */
     public function is_delivery_day(DateTimeImmutable $day): bool
     {
@@ -164,11 +164,11 @@ final class WC_STN_Schedule
     }
 
     /* ---------------------------------------------------------
-     * Terminy
+     * Slots
      * --------------------------------------------------------- */
 
     /**
-     * Najbliższe terminy, których godzina graniczna jeszcze nie minęła.
+     * Next slots whose cutoff time has not passed yet.
      *
      * @return array<int,array{cutoff:DateTimeImmutable,ship:DateTimeImmutable,delivery:?DateTimeImmutable}>
      */
@@ -202,7 +202,7 @@ final class WC_STN_Schedule
     }
 
     /**
-     * Daty wysyłki (Y-m-d) w zakresie dni, niezależnie od godziny granicznej.
+     * Shipping dates (Y-m-d) within the day range, regardless of the cutoff time.
      */
     public function shipping_dates(?DateTimeImmutable $from = null, int $days = self::HORIZON_DAYS): array
     {
@@ -220,7 +220,7 @@ final class WC_STN_Schedule
     }
 
     /**
-     * Etykiety terminu do tokenów w tekstach (bez określeń względnych, te liczy JS i render_text()).
+     * Slot labels for text tokens (without relative terms, those are computed by JS and render_text()).
      */
     public function slot_labels(array $slot): array
     {
@@ -244,7 +244,7 @@ final class WC_STN_Schedule
     }
 
     /**
-     * Wstawia tokeny terminu do tekstu. {countdown} zostaje jako znacznik do podmiany przez JS.
+     * Fills slot tokens into the text. {countdown} stays as a placeholder for JS to replace.
      */
     public function render_text(string $text, array $labels, ?DateTimeImmutable $now = null): string
     {
@@ -280,7 +280,7 @@ final class WC_STN_Schedule
     }
 
     /* ---------------------------------------------------------
-     * Święta i daty wykluczone
+     * Holidays and excluded dates
      * --------------------------------------------------------- */
 
     public function is_holiday(string $ymd): bool

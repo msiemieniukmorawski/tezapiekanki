@@ -1,10 +1,10 @@
 /**
- * Pasek "Dodaj do koszyka" Woodmarta na karcie zestawu (WPC Bundles, typ woosb), inc/product-sticky-cart.php.
+ * Woodmart's sticky "Add to cart" bar on the bundle product page (WPC Bundles, type woosb), inc/product-sticky-cart.php.
  *
- * Woodmart daje zestawom w pasku link, który przewija do formularza wariantów. Zestaw go nie ma, więc kliknięcie
- * nic nie robiło. Tutaj: dopóki zestaw nie jest skompletowany, przycisk "Wybierz smaki" przewija do listy smaków,
- * a po skompletowaniu "Dodaj do koszyka" klika oryginalny przycisk formularza (walidacja WPC i AJAX Woodmarta
- * działają bez zmian). Stan bierzemy z klasy woosb-disabled, którą WPC Bundles ustawia na przycisku formularza.
+ * Woodmart gives bundles a bar link that scrolls to the variations form. Bundles don't have one, so clicking
+ * did nothing. Here: until the bundle is complete, the "Wybierz smaki" button scrolls to the flavour list,
+ * and once complete, "Dodaj do koszyka" clicks the original form button (WPC validation and Woodmart's AJAX
+ * work unchanged). The state comes from the woosb-disabled class that WPC Bundles sets on the form button.
  */
 (function ($) {
   'use strict';
@@ -31,7 +31,7 @@
     update();
     $(document).on('woosb_check_ready', update);
 
-    // Handler Woodmarta na tym przycisku kończy się bez efektu (brak formularza wariantów), ten robi właściwą akcję.
+    // Woodmart's handler on this button ends without effect (no variations form); this one does the actual action.
     $sticky.on('click', function (e) {
       e.preventDefault();
 
@@ -41,11 +41,11 @@
       }
 
       if ($list.length) {
-        // Nagłówek Woodmarta przykleja się dopiero przy przewijaniu w górę, więc zawsze odejmujemy jego wysokość.
+        // Woodmart's header only sticks when scrolling up, so always subtract its height.
         var header = document.querySelector('.whb-main-header');
         var offset = header ? header.offsetHeight : 0;
 
-        // 50 px zapasu, żeby było widać też nagłówek "Skomponuj swój zestaw" nad listą.
+        // 50 px extra, so the "Skomponuj swój zestaw" heading above the list is visible too.
         window.scrollTo({ top: Math.max(0, $list.offset().top - offset - 50), behavior: 'smooth' });
       }
     });

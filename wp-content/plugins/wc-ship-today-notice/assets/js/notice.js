@@ -1,9 +1,9 @@
 /**
  * WooCommerce Ship Today Notice 2.0
  *
- * Bez AJAX: harmonogram terminów przychodzi w atrybucie data-stn (absolutne znaczniki czasu),
- * więc widget działa poprawnie także na stronie trzymanej w cache przez wiele dni.
- * Logika stanów odpowiada WC_Ship_Today_Notice::initial_state() w PHP.
+ * No AJAX: the slot schedule comes in the data-stn attribute (absolute timestamps),
+ * so the widget works correctly even on a page kept in cache for many days.
+ * The state logic mirrors WC_Ship_Today_Notice::initial_state() in PHP.
  */
 (function () {
   'use strict';
@@ -16,7 +16,7 @@
     return Date.now() + (cfg.nowOffset || 0);
   }
 
-  /** Data Y-m-d w strefie czasowej sklepu. */
+  /** Y-m-d date in the shop's time zone. */
   function ymd(ms, cfg) {
     try {
       return new Intl.DateTimeFormat('en-CA', {
@@ -86,7 +86,7 @@
     });
   }
 
-  /** Stan widgetu w danej chwili. */
+  /** Widget state at the given moment. */
   function compute(cfg) {
     var now = nowMs(cfg);
     var nowS = Math.floor(now / 1000);
@@ -130,7 +130,7 @@
       state: state,
       today: today,
       items: items,
-      // Moment kolejnej zmiany treści: najbliższa godzina graniczna albo próg widoczności.
+      // When the content changes next: the nearest cutoff time or the visibility threshold.
       changeAt: vis.mode === 'hours_before' && hoursLeft > vis.hours ? first.cutoff - vis.hours * 3600 : first.cutoff
     };
   }
@@ -187,7 +187,7 @@
     setInterval(function () {
       var nowS = Math.floor(nowMs(cfg) / 1000);
 
-      // Przełączenie na kolejny termin po godzinie granicznej i odświeżenie "dziś/jutro" po północy.
+      // Switch to the next slot after the cutoff time and refresh "today/tomorrow" after midnight.
       if ((s.changeAt && nowS >= s.changeAt) || ymd(nowMs(cfg), cfg) !== s.today) {
         s = render(el, cfg);
       }
@@ -205,7 +205,7 @@
     }
   }
 
-  // Dla treści doładowanych AJAX-em (np. popupy, PJAX motywu).
+  // For content loaded via AJAX (e.g. popups, the theme's PJAX).
   window.WcShipTodayNotice = { init: initAll };
 
   if (document.readyState === 'loading') {

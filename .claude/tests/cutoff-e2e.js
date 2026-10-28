@@ -1,11 +1,11 @@
-// Test przejścia przez godzinę graniczną w przeglądarce (tak, jak działa to na stronie z cache LiteSpeed): zegar stron
-// przesunięty tak, że mija najbliższą godzinę graniczną z silnika wc-ship-today-notice (terminy z WP-CLI) 60 s po
-// starcie testu. Sprawdza, czy po jej minięciu bez przeładowania strony zmienia się: box z terminem na karcie
-// produktu, kafelki terminu w checkoucie (zamknięty termin znika, zaznacza się kolejny, pojawia się komunikat)
-// i popup belki. Nic nie zapisuje.
-// Logikę po stronie serwera (święta, daty wykluczone, walidacja) sprawdza wp-content/plugins/wc-ship-today-notice/tests/cli-schedule-test.php.
+// Test of passing the cutoff time in the browser (the way it works on a page cached by LiteSpeed): the page clock is
+// shifted so that the nearest cutoff from the wc-ship-today-notice engine (dates from WP-CLI) passes 60 s after
+// the test starts. Checks that once it has passed, without reloading the page, these change: the date box on the product
+// page, the date tiles in the checkout (the closed slot disappears, the next one gets selected, a notice appears)
+// and the bar popup. Writes nothing.
+// Server-side logic (holidays, excluded dates, validation) is covered by wp-content/plugins/wc-ship-today-notice/tests/cli-schedule-test.php.
 //
-// Uruchomienie: PPTR_DIR="katalog/z/node_modules" TZP_SHOTS="katalog/na/zrzuty" node .claude/tests/cutoff-e2e.js
+// Usage: PPTR_DIR="katalog/z/node_modules" TZP_SHOTS="katalog/na/zrzuty" node .claude/tests/cutoff-e2e.js
 const path = require('path');
 const fs = require('fs');
 const { execFileSync } = require('child_process');
@@ -25,12 +25,12 @@ const results = [];
 const ok = (name, pass, info = '') => { results.push(pass); console.log(`${pass ? 'OK  ' : 'FAIL'}  ${name}${info ? '  | ' + info : ''}`); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Dwa najbliższe terminy: [godzina graniczna (s), data wysyłki, data dostawy].
+// The two nearest slots: [cutoff (s), ship date, delivery date].
 const slots = JSON.parse(wp('eval', 'echo wp_json_encode(array_map(function ($s) { return array($s["cutoff"]->getTimestamp(), $s["ship"]->format("Y-m-d"), $s["delivery"] ? $s["delivery"]->format("Y-m-d") : ""); }, wc_stn_get_slots(2)));'));
 const [first, second] = slots;
 
-// Jedno przesunięcie zegara dla wszystkich kart: zegar stron mija godzinę graniczną LEAD sekund po starcie testu
-// (czas na załadowanie karty produktu i checkoutu).
+// One clock shift for all tabs: the page clock passes the cutoff LEAD seconds after the test starts
+// (time to load the product page and the checkout).
 const LEAD = 60;
 const OFFSET = (first[0] - LEAD) * 1000 - Date.now();
 const cutoffAt = Date.now() + LEAD * 1000;
@@ -103,7 +103,7 @@ const fakeClock = `(() => {
     await prod.ctx.close();
     await chk.ctx.close();
 
-    // Popup belki: nowa strona z tym samym zegarem (godzina graniczna już minęła).
+    // Bar popup: a new page with the same clock (the cutoff has already passed).
     const home = await open(BASE + '/');
     await home.page.click('.tzp-bar-link');
     await sleep(1500);

@@ -1,19 +1,19 @@
 <?php
 /**
- * WooCommerce → Zestawienie produktów.
+ * WooCommerce → Zestawienie produktów (product summary).
  *
- * CSV z liczbą sztuk każdego produktu z zamówień "W realizacji", filtrowanych po dacie wysyłki
- * (wc-ship-today-notice: _wc_stn_ship_date; starsze zamówienia: Iconic jckwds_date_ymd). Służy do planowania produkcji.
+ * CSV with the quantity of each product from "Processing" orders, filtered by shipping date
+ * (wc-ship-today-notice: _wc_stn_ship_date; older orders: Iconic jckwds_date_ymd). Used for production planning.
  *
- * Przeniesione 1:1 z functions.php motywu Woodmart (2026-10-18). Slug strony, akcja formularza
- * i nonce bez zmian, nowe są tylko nazwy funkcji.
+ * Moved 1:1 from the Woodmart theme's functions.php (2026-10-18). Page slug, form action
+ * and nonce are unchanged; only the function names are new.
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Rejestruje moduł, chyba że stara kopia nadal siedzi w functions.php Woodmarta
- * (na produkcji do czasu jej usunięcia albo aktualizacji motywu). Bez tego menu byłoby zdublowane.
+ * Registers the module unless the old copy still lives in Woodmart's functions.php
+ * (on production until it is removed or the theme is updated). Otherwise the menu would be duplicated.
  */
 function tzp_product_summary_init() {
 	if ( function_exists( 'wc_product_summary_page' ) ) {
@@ -26,7 +26,7 @@ function tzp_product_summary_init() {
 add_action( 'after_setup_theme', 'tzp_product_summary_init' );
 
 /**
- * Pozycja w menu WooCommerce.
+ * WooCommerce menu item.
  */
 function tzp_product_summary_menu() {
 	add_submenu_page(
@@ -40,7 +40,7 @@ function tzp_product_summary_menu() {
 }
 
 /**
- * Formularz z zakresem dat.
+ * Date range form.
  */
 function tzp_product_summary_page() {
 	?>
@@ -83,7 +83,7 @@ function tzp_product_summary_page() {
 }
 
 /**
- * Generuje i wysyła CSV.
+ * Generates and sends the CSV.
  */
 function tzp_generate_product_summary() {
 
@@ -100,15 +100,15 @@ function tzp_generate_product_summary() {
 		wp_die( 'Brak zakresu dat' );
 	}
 
-	// Wykluczone: zestawy 9 i 12 (6412, 6417) oraz usunięty już produkt 6420.
+	// Excluded: bundles of 9 and 12 (6412, 6417) and the already deleted product 6420.
 	$excluded_ids = array( 6420, 6417, 6412 );
 
-	// Czyścimy bufory, żeby do CSV nie trafił żaden wcześniejszy output.
+	// Clear output buffers so no earlier output ends up in the CSV.
 	while ( ob_get_level() ) {
 		ob_end_clean();
 	}
 
-	// Zamówienia przez API WooCommerce (zgodne z HPOS).
+	// Orders via the WooCommerce API (HPOS compatible).
 	$orders = wc_get_orders(
 		array(
 			'limit'  => -1,
@@ -122,7 +122,7 @@ function tzp_generate_product_summary() {
 
 	foreach ( $orders as $order ) {
 
-		// Data wysyłki: z wc-ship-today-notice (Y-m-d), a dla zamówień sprzed przełączenia z Iconic (Ymd). Bez migracji.
+		// Shipping date: from wc-ship-today-notice (Y-m-d), or from Iconic (Ymd) for orders placed before the switch. No migration.
 		$delivery_date_formatted = (string) $order->get_meta( '_wc_stn_ship_date' );
 
 		if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $delivery_date_formatted ) ) {
@@ -172,7 +172,7 @@ function tzp_generate_product_summary() {
 		}
 	}
 
-	// Sortowanie malejąco po liczbie sztuk.
+	// Sort by quantity, descending.
 	arsort( $products );
 
 	header( 'Content-Type: text/csv; charset=UTF-8' );
@@ -182,7 +182,7 @@ function tzp_generate_product_summary() {
 
 	$output = fopen( 'php://output', 'w' );
 
-	// BOM UTF-8 dla Excela.
+	// UTF-8 BOM for Excel.
 	fwrite( $output, "\xEF\xBB\xBF" );
 
 	fputcsv(
@@ -205,7 +205,7 @@ function tzp_generate_product_summary() {
 		);
 	}
 
-	// Pusty wiersz przed sumą.
+	// Empty row before the total.
 	fputcsv( $output, array(), ';' );
 
 	fputcsv(
