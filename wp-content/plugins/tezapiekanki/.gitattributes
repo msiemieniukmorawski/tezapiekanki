@@ -1,0 +1,7 @@
+# Keep text files in LF, as on the server (no CRLF conversion with core.autocrlf).
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.pdf binary
+*.mo  binary

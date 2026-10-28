@@ -1,0 +1,300 @@
+/* =========================================================
+   Product page: nutrition facts with the PDF sheet ([tzp_nutrition], [tzp_product_card], includes/class-product-card.php)
+   and flavor pins ([tzp_flavor_pins], includes/class-flavor-pins.php). Woodmart layout 6480.
+   ========================================================= */
+
+.tzp-nutrition,
+.tzp-flavors,
+.tzp-card-link {
+	--tzp-brand: #8c3215;
+	--tzp-line: #ececec;
+	--tzp-muted: #666;
+}
+
+/* Nutrition facts */
+
+.tzp-nutrition {
+	padding: 20px;
+	border: 1px solid var(--tzp-line);
+	border-radius: 8px;
+	background: #fcfcfc;
+	color: #202020;
+}
+
+.tzp-nutrition__head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 2px 12px;
+	margin-bottom: 6px;
+}
+
+.tzp-nutrition .tzp-nutrition__title {
+	margin: 0;
+	color: #202020;
+	font-size: 15px;
+	font-weight: 600;
+	line-height: 1.3;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+
+.tzp-nutrition__per {
+	color: var(--tzp-muted);
+	font-size: 13px;
+}
+
+.tzp-nutrition .tzp-nutrition__table {
+	width: 100%;
+	margin: 0;
+	border: 0;
+	border-collapse: collapse;
+	background: none;
+	font-size: 14px;
+	line-height: 1.35;
+}
+
+.tzp-nutrition .tzp-nutrition__table th,
+.tzp-nutrition .tzp-nutrition__table td {
+	padding: 7px 0;
+	border: 0;
+	border-bottom: 1px solid var(--tzp-line);
+	background: none;
+	color: #202020;
+	font-size: inherit;
+	letter-spacing: normal;
+	text-align: left;
+	text-transform: none;
+	vertical-align: baseline;
+}
+
+.tzp-nutrition .tzp-nutrition__table th {
+	font-weight: 400;
+}
+
+.tzp-nutrition .tzp-nutrition__table td {
+	padding-left: 12px;
+	font-weight: 600;
+	text-align: right;
+	white-space: nowrap;
+}
+
+.tzp-nutrition .tzp-nutrition__table tr:last-child th,
+.tzp-nutrition .tzp-nutrition__table tr:last-child td {
+	border-bottom: 0;
+}
+
+/* "w tym kwasy tłuszczowe nasycone", "w tym cukry": indented and lighter, as on a food label. */
+.tzp-nutrition .tzp-nutrition__table .tzp-nutrition__sub th {
+	padding-left: 14px;
+	color: var(--tzp-muted);
+	font-size: 13px;
+}
+
+.tzp-nutrition .tzp-nutrition__table .tzp-nutrition__sub td {
+	color: #444;
+	font-weight: 400;
+}
+
+.tzp-nutrition__foot {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px 16px;
+	margin-top: 12px;
+	padding-top: 14px;
+	border-top: 1px solid var(--tzp-line);
+}
+
+.tzp-nutrition__head + .tzp-nutrition__foot,
+.tzp-nutrition > .tzp-nutrition__foot:first-child {
+	margin-top: 0;
+	padding-top: 0;
+	border-top: 0;
+}
+
+.tzp-nutrition .tzp-nutrition__weight {
+	margin: 0;
+	font-size: 14px;
+}
+
+/* Product data sheet button (PDF) */
+
+a.tzp-card-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 9px 16px 9px 12px;
+	border: 1px solid var(--tzp-brand);
+	border-radius: 6px;
+	background: #fff;
+	color: var(--tzp-brand);
+	line-height: 1.25;
+	text-decoration: none;
+	transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+a.tzp-card-link:hover,
+a.tzp-card-link:focus-visible {
+	background: var(--tzp-brand);
+	color: #fff;
+}
+
+a.tzp-card-link:focus-visible {
+	outline: 2px solid var(--tzp-brand);
+	outline-offset: 2px;
+}
+
+.tzp-card-link__icon {
+	flex: none;
+}
+
+.tzp-card-link__text {
+	display: flex;
+	flex-direction: column;
+}
+
+.tzp-card-link__title {
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.tzp-card-link__desc {
+	font-size: 12px;
+	opacity: 0.85;
+}
+
+@media (max-width: 767px) {
+	.tzp-nutrition {
+		padding: 16px;
+	}
+
+	.tzp-nutrition__foot {
+		flex-direction: column;
+		align-items: stretch;
+	}
+}
+
+/* Flavor pins */
+
+.tzp-flavors {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px 10px;
+	margin: 2px 0 14px;
+}
+
+.tzp-flavors__label {
+	flex: none;
+	padding-top: 7px;
+	color: #202020;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.3;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+
+.tzp-flavors .tzp-flavors__list {
+	position: relative;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.tzp-flavors .tzp-flavors__list li {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.tzp-flavors .tzp-flavors__list li::before {
+	content: none;
+}
+
+a.tzp-flavors__pin {
+	display: inline-block;
+	padding: 6px 12px;
+	border: 1px solid #dcdcdc;
+	border-radius: 999px;
+	background: #fff;
+	color: #202020;
+	font-size: 13px;
+	line-height: 1.3;
+	text-decoration: none;
+	white-space: nowrap;
+	transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+a.tzp-flavors__pin:hover,
+a.tzp-flavors__pin:focus-visible {
+	border-color: var(--tzp-brand);
+	color: var(--tzp-brand);
+}
+
+a.tzp-flavors__pin:focus-visible {
+	outline: 2px solid var(--tzp-brand);
+	outline-offset: 2px;
+}
+
+a.tzp-flavors__pin.is-current,
+a.tzp-flavors__pin.is-current:hover {
+	border-color: var(--tzp-brand);
+	background: var(--tzp-brand);
+	color: #fff;
+	font-weight: 600;
+	cursor: default;
+}
+
+a.tzp-flavors__pin.is-out {
+	border-style: dashed;
+	color: #999;
+}
+
+/* Phone: label above a single scrollable row of pins, edge to edge of the screen (the container has 15 px
+   padding). Edge shading only where there is more to scroll (classes from js/flavor-pins.js). */
+@media (max-width: 767px) {
+	.tzp-flavors {
+		display: block;
+		margin-bottom: 4px;
+	}
+
+	.tzp-flavors__label {
+		display: block;
+		padding: 0 0 6px;
+		font-size: 12px;
+	}
+
+	.tzp-flavors .tzp-flavors__list {
+		flex-wrap: nowrap;
+		margin: 0 -15px;
+		padding: 0 15px 2px;
+		overflow-x: auto;
+		scrollbar-width: none;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.tzp-flavors .tzp-flavors__list::-webkit-scrollbar {
+		display: none;
+	}
+
+	.tzp-flavors .tzp-flavors__list.has-more-end {
+		-webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+		mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+	}
+
+	.tzp-flavors .tzp-flavors__list.has-more-start {
+		-webkit-mask-image: linear-gradient(to right, transparent, #000 36px);
+		mask-image: linear-gradient(to right, transparent, #000 36px);
+	}
+
+	.tzp-flavors .tzp-flavors__list.has-more-start.has-more-end {
+		-webkit-mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent);
+		mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent);
+	}
+}

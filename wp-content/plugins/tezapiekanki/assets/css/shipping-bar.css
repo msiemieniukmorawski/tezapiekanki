@@ -1,0 +1,158 @@
+/* =========================================================
+   Shipping bar above the header (includes/class-shipping-bar.php)
+   ========================================================= */
+
+.tzp-bar {
+	position: relative;
+	z-index: 400;
+	overflow: hidden;
+	/* Black (decided 2026-10-26): the brick color blended with the photo under the transparent home page header.
+	   The bottom line separates it from the black strip under the header on subpages. */
+	background: #000;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+	color: #fff;
+	transition: height 0.25s ease;
+}
+
+.tzp-bar__inner {
+	position: relative;
+	max-width: 1240px;
+	margin: 0 auto;
+	padding: 0 52px;
+}
+
+.tzp-bar__link {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: baseline;
+	gap: 0 8px;
+	padding: 10px 0;
+	color: #fff;
+	font-size: 14px;
+	line-height: 20px;
+	text-align: center;
+	text-decoration: none;
+}
+
+.tzp-bar__link:hover,
+.tzp-bar__link:focus {
+	color: #fff;
+}
+
+.tzp-bar__link--static {
+	cursor: default;
+}
+
+.tzp-bar__cta[hidden] {
+	display: none !important;
+}
+
+.tzp-bar__cta {
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	white-space: nowrap;
+}
+
+.tzp-bar__arrow {
+	display: inline-block;
+	margin-left: 6px;
+	text-decoration: none;
+	transition: transform 0.2s ease;
+}
+
+.tzp-bar__link:hover .tzp-bar__arrow {
+	transform: translateX(3px);
+}
+
+.tzp-bar__link:focus-visible,
+.tzp-bar__close:focus-visible {
+	outline: 2px solid #fff;
+	outline-offset: -4px;
+	border-radius: 4px;
+}
+
+/* Woodmart styles button (background, padding, min-height), so reset it explicitly. */
+.tzp-bar .tzp-bar__close {
+	position: absolute;
+	top: 50%;
+	right: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	transform: translateY(-50%);
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	box-shadow: none;
+	color: #fff;
+	cursor: pointer;
+	opacity: 0.85;
+}
+
+.tzp-bar .tzp-bar__close:hover {
+	background: rgba(255, 255, 255, 0.12);
+	color: #fff;
+	opacity: 1;
+}
+
+.tzp-bar .tzp-bar__close svg {
+	display: block;
+}
+
+@media (max-width: 767.98px) {
+	.tzp-bar__inner {
+		padding: 0 44px 0 12px;
+	}
+
+	.tzp-bar__link {
+		justify-content: flex-start;
+		gap: 0 6px;
+		padding: 8px 0;
+		font-size: 12.5px;
+		line-height: 18px;
+		text-align: left;
+	}
+
+	.tzp-bar .tzp-bar__close {
+		right: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tzp-bar,
+	.tzp-bar__arrow {
+		transition: none;
+	}
+}
+
+/* =========================================================
+   Popup "Dlaczego wysyłamy tylko 2 razy w tygodniu?"
+   Nearest date: [ship_today_notice class="tzp-why-dates" text="…"] in the Woodmart popup.
+   ========================================================= */
+
+.wc-ship-today-notice.tzp-why-dates {
+	display: block !important;
+	margin: 0;
+	padding: 14px 18px;
+	border: 0;
+	border-radius: 8px;
+	background: #f7efeb;
+	color: #222;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1.45;
+}
+
+@media (max-width: 767.98px) {
+	.wc-ship-today-notice.tzp-why-dates {
+		padding: 12px 14px;
+		font-size: 15px;
+	}
+}
