@@ -3,10 +3,7 @@
 # Whitelist: ignore everything (WP core, Woodmart, third-party plugins,
 # uploads, cache, backups, wp-config.php with credentials) and allow only
 # the code and docs we change ourselves.
-#
-# The `tezapiekanki` plugin has its own repository (wp-content/plugins/tezapiekanki/.git),
-# so it is not tracked here. Adding it would store it as an empty
-# "embedded repository" without files.
+
 
 /*
 
@@ -30,9 +27,11 @@
 /wp-content/themes/*
 !/wp-content/themes/woodmart-child/
 
-# Delivery schedule plugin (formerly a separate repo, history in backups/2026-10-28-wc-ship-today-notice-git)
+# Own plugins (both were separate repos until 2026-10-28; tezapiekanki history is merged in,
+# the old wc-ship-today-notice .git is in backups/2026-10-28-wc-ship-today-notice-git)
 !/wp-content/plugins/
 /wp-content/plugins/*
+!/wp-content/plugins/tezapiekanki/
 !/wp-content/plugins/wc-ship-today-notice/
 
 # OS and editor files
